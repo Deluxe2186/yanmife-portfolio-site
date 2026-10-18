@@ -73,8 +73,8 @@ export function AboutSection() {
             {siteConfig.bio}
           </p>
           <p className="mt-4 text-balance text-base leading-relaxed text-muted-foreground">
-            I'm currently expanding my skills in data cleaning and normalization,
-            and I'm always looking for new projects that challenge me to think
+            I&apos;m currently expanding my skills in data cleaning and normalization,
+            and I&apos;m always looking for new projects that challenge me to think
             differently about user experience.
           </p>
 
