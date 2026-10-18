@@ -1,5 +1,5 @@
 import type { IconType } from 'react-icons';
-import { SiFiverr, SiGithub, SiIndeed, SiUpwork } from 'react-icons/si';
+import { SiFiverr, SiGithub, SiUpwork } from 'react-icons/si';
 import { FaLinkedin } from 'react-icons/fa6';
 
 export const siteConfig = {
@@ -26,7 +26,6 @@ export interface SocialLink {
 export const socialLinks: SocialLink[] = [
   { name: 'Upwork', url: 'https://www.upwork.com/freelancers/~01b19c1bdca34f1237?mp_source=share', icon: SiUpwork },
   { name: 'Fiverr', url: 'https://www.fiverr.com/s/Bbbapb5', icon: SiFiverr },
-  { name: 'Indeed', url: 'https://indeed.com', icon: SiIndeed },
   { name: 'LinkedIn', url: 'https://www.linkedin.com/in/oluwayanmife-arayela-00565b336', icon: FaLinkedin },
   { name: 'GitHub', url: 'https://github.com/Deluxe2186', icon: SiGithub },
 ];
