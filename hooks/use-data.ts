@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { fetchProfilePhoto } from '@/lib/profile-photo';
 import type { Project, Skill, Experience } from '@/lib/types';
 
 export function useProjects() {
@@ -81,4 +82,25 @@ export function useExperience() {
   }, []);
 
   return { experience, loading, error };
+}
+
+export function useProfilePhoto() {
+  const [url, setUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const photo = await fetchProfilePhoto();
+        if (!cancelled) setUrl(photo.url);
+      } catch (err) {
+        console.error('[supabase] profile photo', err);
+      }
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  return { url, loading };
 }

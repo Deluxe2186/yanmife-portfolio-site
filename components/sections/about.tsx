@@ -7,6 +7,7 @@ import { siteConfig } from '@/lib/site-config';
 import { SectionReveal } from '@/components/section-reveal';
 import { SectionHeading } from '@/components/section-heading';
 import { User } from 'lucide-react';
+import { useProfilePhoto } from '@/hooks/use-data';
 
 function CountUp({ value, label }: { value: number; label: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -44,6 +45,9 @@ function CountUp({ value, label }: { value: number; label: string }) {
 }
 
 export function AboutSection() {
+  const { url: photoUrl } = useProfilePhoto();
+  const [photoBroken, setPhotoBroken] = useState(false);
+
   return (
     <SectionReveal id="about" className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
       <SectionHeading
@@ -61,12 +65,26 @@ export function AboutSection() {
           className="relative mx-auto aspect-square w-full max-w-sm"
         >
           <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5" />
-          <div className="absolute inset-0 flex items-center justify-center rounded-3xl border border-border bg-card">
-            <User className="h-24 w-24 text-muted-foreground/40" />
+          <div className="absolute inset-0 overflow-hidden rounded-3xl border border-border bg-card">
+            {photoUrl && !photoBroken ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={photoUrl}
+                alt={`Portrait of ${siteConfig.name}`}
+                onError={() => setPhotoBroken(true)}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center">
+                <User className="h-24 w-24 text-muted-foreground/40" />
+              </div>
+            )}
           </div>
-          <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-muted-foreground">
-            Photo placeholder — replace in admin
-          </p>
+          {(!photoUrl || photoBroken) && process.env.NODE_ENV === 'development' && (
+            <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-muted-foreground">
+              Photo placeholder. Upload yours in Admin, then Profile.
+            </p>
+          )}
         </motion.div>
 
         <div>
