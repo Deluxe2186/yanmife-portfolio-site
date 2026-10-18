@@ -38,9 +38,9 @@ export function SectionReveal({
       ref={ref as any}
       id={id}
       className={className}
-      variants={reduceMotion ? undefined : variants}
-      initial={reduceMotion ? false : 'hidden'}
-      whileInView={reduceMotion ? undefined : 'visible'}
+      variants={variants}
+      initial={'hidden'}
+      whileInView={'visible'}
       viewport={{ once: true, margin: '-80px' }}
     >
       {children}

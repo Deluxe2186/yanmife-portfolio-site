@@ -27,8 +27,8 @@ export function SocialSection() {
               target="_blank"
               rel="noopener noreferrer"
               className="group flex items-center gap-2.5 rounded-xl border border-border bg-card px-5 py-3.5 text-sm font-medium transition-all hover:border-primary hover:glow-sm"
-              initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-              whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.06 }}
               whileHover={reduceMotion ? undefined : { y: -3 }}

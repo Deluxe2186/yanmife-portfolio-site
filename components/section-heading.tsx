@@ -15,8 +15,8 @@ export function SectionHeading({ eyebrow, title, subtitle }: SectionHeadingProps
   return (
     <div className="mb-12 max-w-2xl">
       <motion.div
-        initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-        whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
         className="mb-2 flex items-center gap-2"
@@ -27,8 +27,8 @@ export function SectionHeading({ eyebrow, title, subtitle }: SectionHeadingProps
         </span>
       </motion.div>
       <motion.h2
-        initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-        whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5, delay: 0.1 }}
         className="text-3xl font-bold tracking-tight sm:text-4xl"
@@ -37,8 +37,8 @@ export function SectionHeading({ eyebrow, title, subtitle }: SectionHeadingProps
       </motion.h2>
       {subtitle && (
         <motion.p
-          initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-          whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mt-3 text-muted-foreground"
