@@ -189,7 +189,7 @@ export function ContactSection() {
               className="flex items-center gap-2 rounded-lg border border-success/30 bg-success/5 p-3 text-sm text-success"
             >
               <CheckCircle className="h-4 w-4" />
-              Thanks for reaching out! I'll get back to you soon.
+              Thanks for reaching out! I&apos;ll get back to you soon.
             </motion.div>
           )}
 
