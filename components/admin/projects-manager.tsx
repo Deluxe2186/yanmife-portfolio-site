@@ -45,8 +45,8 @@ export function ProjectsManager() {
     loadProjects();
   }, []);
 
-  const loadProjects = async () => {
-    setLoading(true);
+  const loadProjects = async (silent = false) => {
+    if (!silent) setLoading(true);
     const { data } = await supabase
       .from('projects')
       .select('*')
@@ -65,13 +65,18 @@ export function ProjectsManager() {
     setSaving(false);
     setEditing(null);
     setCreating(false);
-    loadProjects();
+    loadProjects(true);
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this project? This cannot be undone.')) return;
-    await supabase.from('projects').delete().eq('id', id);
-    loadProjects();
+    const previous = projects;
+    setProjects((prev) => prev.filter((item) => item.id !== id));
+    const { error } = await supabase.from('projects').delete().eq('id', id);
+    if (error) {
+      setProjects(previous);
+      alert(`Could not delete: ${error.message}`);
+    }
   };
 
   const handleReorder = async (project: Project, direction: 'up' | 'down') => {
@@ -85,7 +90,7 @@ export function ProjectsManager() {
       supabase.from('projects').update({ sort_order: swap.sort_order }).eq('id', project.id),
       supabase.from('projects').update({ sort_order: project.sort_order }).eq('id', swap.id),
     ]);
-    loadProjects();
+    loadProjects(true);
   };
 
   const handleUpload = async (file: File, project: any) => {

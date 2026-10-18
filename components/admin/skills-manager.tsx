@@ -21,8 +21,8 @@ export function SkillsManager() {
 
   useEffect(() => { load(); }, []);
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true);
     const { data } = await supabase.from('skills').select('*').order('sort_order');
     setSkills(data ?? []);
     setLoading(false);
@@ -38,13 +38,18 @@ export function SkillsManager() {
     setSaving(false);
     setEditing(null);
     setCreating(false);
-    load();
+    load(true);
   };
 
   const del = async (id: string) => {
     if (!confirm('Delete this skill?')) return;
-    await supabase.from('skills').delete().eq('id', id);
-    load();
+    const previous = skills;
+    setSkills((prev) => prev.filter((item) => item.id !== id));
+    const { error } = await supabase.from('skills').delete().eq('id', id);
+    if (error) {
+      setSkills(previous);
+      alert(`Could not delete: ${error.message}`);
+    }
   };
 
   if (loading) {
