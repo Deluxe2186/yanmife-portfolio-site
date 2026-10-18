@@ -1,7 +1,8 @@
 'use client';
 
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ArrowDown } from 'lucide-react';
 import { navLinks, siteConfig } from '@/lib/site-config';
 import { ThemeToggle } from '@/components/theme-toggle';

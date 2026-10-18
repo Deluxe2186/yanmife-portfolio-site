@@ -1,6 +1,7 @@
 'use client';
 
-import { motion, useReducedMotion, type Variants } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
+import { motion, type Variants } from 'framer-motion';
 import { type ReactNode, useRef } from 'react';
 
 interface SectionRevealProps {

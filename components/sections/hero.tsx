@@ -1,11 +1,11 @@
 'use client';
 
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowDown, ArrowRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { siteConfig } from '@/lib/site-config';
 import { MagneticButton } from '@/components/magnetic-button';
-import { useReducedMotion as useRM } from 'framer-motion';
 
 function RotatingRoles() {
   const [index, setIndex] = useState(0);
@@ -42,7 +42,7 @@ function RotatingRoles() {
 }
 
 export function Hero() {
-  const reduceMotion = useRM();
+  const reduceMotion = useReducedMotion();
 
   const scrollTo = (href: string) => {
     document.querySelector(href)?.scrollIntoView({

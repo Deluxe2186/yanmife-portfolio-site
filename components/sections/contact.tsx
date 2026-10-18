@@ -1,7 +1,8 @@
 'use client';
 
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Send, CheckCircle, Download, Mail, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { siteConfig } from '@/lib/site-config';

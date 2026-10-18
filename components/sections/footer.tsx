@@ -1,7 +1,8 @@
 'use client';
 
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
 import { navLinks, siteConfig, socialLinks } from '@/lib/site-config';
 
