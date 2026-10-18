@@ -17,7 +17,7 @@ export function SocialSection() {
         subtitle="I'm active on these platforms — let's connect."
       />
 
-      <div className="flex flex-wrap gap-3 sm:gap-4">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(8rem,1fr))] gap-3 sm:gap-4">
         {socialLinks.map((link, i) => {
           const Icon = link.icon;
           return (
@@ -26,7 +26,7 @@ export function SocialSection() {
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center gap-2.5 rounded-xl border border-border bg-card px-5 py-3.5 text-sm font-medium transition-all hover:border-primary hover:glow-sm"
+              className="group flex items-center justify-center gap-2.5 rounded-xl border border-border bg-card px-5 py-3.5 text-sm font-medium transition-all hover:border-primary hover:glow-sm"
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
