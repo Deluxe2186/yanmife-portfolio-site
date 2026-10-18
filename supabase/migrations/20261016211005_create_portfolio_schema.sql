@@ -148,33 +148,33 @@ CREATE INDEX IF NOT EXISTS messages_created_idx ON messages (created_at DESC);
 -- ============ SEED DATA ============
 INSERT INTO projects (title, slug, category, overview, description, cover_image_url, tools, role, live_url, figma_url, featured, sort_order)
 VALUES
-  ('MomoPSB Mobile Money App', 'momopsb-mobile-money-app', 'Mobile',
-   'A fintech mobile app redesign for seamless mobile money transfers and bill payments.',
-   'Redesigned the core transaction flow for MomoPSB, a fintech mobile money provider. Focused on reducing friction in the most common actions: sending money, paying bills, and checking balances. Conducted user interviews with 15 existing users, created wireframes, prototyped in Figma, and validated with usability testing. The redesign reduced average transaction time by 40% and improved the app store rating from 3.2 to 4.6.',
+  ('Sample: Mobile Money App', 'sample-mobile-money-app', 'Mobile',
+   'Sample project. Replace this with a one-line summary of your real work.',
+   'Sample case study. Replace this text from the admin page with your real project story: the problem, your process, and the result.',
    'https://images.pexels.com/photos/5342168/pexels-photo-5342168.jpeg',
-   ARRAY['Figma', 'Prototyping', 'User Research', 'Wireframing'],
-   'UI/UX Designer (Intern)',
+   ARRAY['Figma', 'Prototyping', 'Wireframing'],
+   'Your role here',
    NULL, NULL, true, 1),
-  ('Freelance Portfolio Dashboard', 'freelance-portfolio-dashboard', 'Web',
-   'A clean analytics dashboard for freelancers to track income, projects, and client activity.',
-   'Designed and developed a responsive web dashboard that helps freelancers visualize their monthly income, active projects, and client communication in one place. Built with Next.js and Tailwind CSS, featuring real-time charts, a clean card-based layout, and dark mode support.',
+  ('Sample: Web Dashboard', 'sample-web-dashboard', 'Web',
+   'Sample project. Replace this with a one-line summary of your real work.',
+   'Sample case study. Replace this text from the admin page with your real project story: the problem, your process, and the result.',
    'https://images.pexels.com/photos/7681091/pexels-photo-7681091.jpeg',
    ARRAY['Next.js', 'React', 'Tailwind CSS', 'Figma'],
-   'Designer & Developer',
+   'Your role here',
    NULL, NULL, true, 2),
-  ('Dribbble Branding Concept', 'dribbble-branding-concept', 'Branding',
-   'A visual identity system for a fictional creative agency, exploring bold typography and colour.',
-   'Created a complete brand identity for a fictional creative agency called "Pulse." Designed the logo, color palette, typography system, and brand guidelines. The concept was published on Dribbble and received over 200 likes.',
+  ('Sample: Brand Identity', 'sample-brand-identity', 'Branding',
+   'Sample project. Replace this with a one-line summary of your real work.',
+   'Sample case study. Replace this text from the admin page with your real project story: the problem, your process, and the result.',
    'https://images.pexels.com/photos/6804077/pexels-photo-6804077.jpeg',
-   ARRAY['Figma', 'Illustrator', 'Branding', 'Typography'],
-   'Brand Designer',
+   ARRAY['Figma', 'Branding', 'Typography'],
+   'Your role here',
    NULL, NULL, false, 3),
-  ('E-commerce Checkout Flow', 'ecommerce-checkout-flow', 'Web',
-   'A streamlined checkout experience reducing cart abandonment with a 3-step progressive flow.',
-   'Redesigned the checkout experience for an e-commerce client. Replaced the traditional single-page form with a 3-step progressive flow: shipping, payment, and review. Added a persistent order summary and trust signals. The redesign reduced cart abandonment by 25%.',
+  ('Sample: Checkout Flow', 'sample-checkout-flow', 'Web',
+   'Sample project. Replace this with a one-line summary of your real work.',
+   'Sample case study. Replace this text from the admin page with your real project story: the problem, your process, and the result.',
    'https://images.pexels.com/photos/4458/cellphone-smartphone-photo-concentration.jpg',
-   ARRAY['Figma', 'Prototyping', 'UI/UX', 'Wireframing'],
-   'UI/UX Designer',
+   ARRAY['Figma', 'Prototyping', 'Wireframing'],
+   'Your role here',
    NULL, NULL, false, 4)
 ON CONFLICT (slug) DO NOTHING;
 
@@ -197,9 +197,9 @@ ON CONFLICT DO NOTHING;
 INSERT INTO experience (role, company, start_date, end_date, description, sort_order)
 VALUES
   ('UI/UX Design Intern', 'MomoPSB', '2024-01', '2024-06',
-   'Worked on the mobile money app redesign, conducting user research, creating wireframes and prototypes, and collaborating with developers to ship key improvements to the transaction flow.', 1),
+   'Sample description. Edit this from the admin page to describe what you actually did.', 1),
   ('Freelance Web Developer & Designer', 'Self-employed', '2023-06', NULL,
-   'Designing and building clean, responsive websites and web apps for small businesses and individuals. Handling everything from discovery and design to development and deployment.', 2)
+   'Sample description. Edit this from the admin page to describe your freelance work.', 2)
 ON CONFLICT DO NOTHING;
 
 -- ============ STORAGE BUCKET ============
