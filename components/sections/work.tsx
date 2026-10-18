@@ -58,6 +58,9 @@ export function WorkSection() {
       {error && (
         <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center text-sm text-destructive">
           Something went wrong loading projects. Please try again later.
+          {process.env.NODE_ENV === 'development' && (
+            <span className="mt-2 block font-mono text-xs opacity-80">{error}</span>
+          )}
         </div>
       )}
 
