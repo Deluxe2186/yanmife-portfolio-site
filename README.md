@@ -8,7 +8,7 @@ A modern, fully responsive personal portfolio website for Yanmife Arayela, a UI/
 - **Styling**: Tailwind CSS + shadcn/ui
 - **Animations**: Framer Motion
 - **Database/Auth/Storage**: Supabase
-- **Icons**: Lucide React
+- **Icons**: Lucide React, plus React Icons for brand logos
 - **Fonts**: Inter (Google Fonts)
 
 ## Features
@@ -50,13 +50,25 @@ Required variables:
 - `NEXT_PUBLIC_SUPABASE_URL` — your Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — your Supabase anon key
 
-### 3. Set up Supabase Auth (for admin)
+### 3. Create the database tables
+
+1. In your Supabase dashboard, open **SQL Editor** → **New query**
+2. Copy everything from `supabase/migrations/20261016211005_create_portfolio_schema.sql` and paste it in
+3. Click **Run**
+4. Check **Table Editor**: you should see `projects`, `skills`, `experience` and `messages`, and **Storage** should show a `project-images` bucket
+
+The file also adds a few sample rows so the site is not empty. Replace them from `/admin`.
+
+### 4. Set up Supabase Auth (for admin)
 
 1. Go to your Supabase dashboard → Authentication → Users
-2. Click "Add user" and create an account with email and password
-3. Use those credentials to log in at `/admin`
+2. Click "Add user" → "Create new user", enter an email and password, and tick "Auto Confirm User"
+3. Then open Authentication → Sign In / Providers and turn **off** "Allow new users to sign up"
+4. Use the credentials from step 2 to log in at `/admin`
 
-### 4. Run the dev server
+Step 3 matters. The database rules let any logged-in user edit content and read messages, so sign-ups must stay closed.
+
+### 5. Run the dev server
 
 ```bash
 npm run dev
@@ -64,7 +76,7 @@ npm run dev
 
 Visit `http://localhost:3000`
 
-### 5. Build for production
+### 6. Build for production
 
 ```bash
 npm run build
@@ -77,6 +89,7 @@ Navigate to `/admin` and sign in with your Supabase auth credentials. From there
 - **Projects**: Add, edit, delete, and reorder projects. Upload cover images to Supabase Storage.
 - **Skills**: Add, edit, and delete skill entries grouped by category.
 - **Experience**: Add, edit, delete, and reorder experience entries.
+- **Profile**: Upload, replace or remove the photo shown in the About section.
 - **Messages**: Read and delete contact form submissions.
 
 ## Database Schema
@@ -90,7 +103,7 @@ Four tables with Row Level Security:
 | `experience` | Yes | No | Insert/Update/Delete |
 | `messages` | No | Insert only | Read/Delete |
 
-A public storage bucket `project-images` is used for project cover images.
+A public storage bucket `project-images` is used for project cover images and the profile photo.
 
 ## Keep-Alive
 
