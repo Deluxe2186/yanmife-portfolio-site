@@ -62,10 +62,12 @@ export function Footer() {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                  className={`flex h-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary ${
+                    link.wordmark ? 'px-3' : 'w-9'
+                  }`}
                   aria-label={link.name}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className={link.wordmark ? 'h-3 w-10' : 'h-4 w-4'} />
                 </a>
               );
             })}
