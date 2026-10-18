@@ -1,7 +1,8 @@
 'use client';
 
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { useEffect, useRef, useState } from 'react';
-import { motion, useInView, useReducedMotion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import { siteConfig } from '@/lib/site-config';
 import { SectionReveal } from '@/components/section-reveal';
 import { SectionHeading } from '@/components/section-heading';

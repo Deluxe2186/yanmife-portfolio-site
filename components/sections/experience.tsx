@@ -1,6 +1,7 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
+import { motion } from 'framer-motion';
 import { Briefcase } from 'lucide-react';
 import { useExperience } from '@/hooks/use-data';
 import { SectionReveal } from '@/components/section-reveal';

@@ -1,7 +1,8 @@
 'use client';
 
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight, MousePointerClick, X, ExternalLink, Figma } from 'lucide-react';
 import { useProjects } from '@/hooks/use-data';
 import type { Project, ProjectCategory } from '@/lib/types';

@@ -1,6 +1,7 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
+import { motion } from 'framer-motion';
 
 interface SectionHeadingProps {
   eyebrow: string;
