@@ -54,7 +54,7 @@ export function Footer() {
           </nav>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
-            {socialLinks.slice(0, 5).map((link) => {
+            {socialLinks.map((link) => {
               const Icon = link.icon;
               return (
                 <a
