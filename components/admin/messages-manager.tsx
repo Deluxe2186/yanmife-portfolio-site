@@ -13,8 +13,8 @@ export function MessagesManager() {
 
   useEffect(() => { load(); }, []);
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true);
     const { data } = await supabase
       .from('messages')
       .select('*')
@@ -25,8 +25,13 @@ export function MessagesManager() {
 
   const del = async (id: string) => {
     if (!confirm('Delete this message?')) return;
-    await supabase.from('messages').delete().eq('id', id);
-    load();
+    const previous = messages;
+    setMessages((prev) => prev.filter((item) => item.id !== id));
+    const { error } = await supabase.from('messages').delete().eq('id', id);
+    if (error) {
+      setMessages(previous);
+      alert(`Could not delete: ${error.message}`);
+    }
   };
 
   if (loading) {
@@ -37,7 +42,7 @@ export function MessagesManager() {
     <div>
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-lg font-semibold">Messages ({messages.length})</h2>
-        <Button size="sm" variant="outline" onClick={load}>
+        <Button size="sm" variant="outline" onClick={() => load()}>
           <RefreshCw className="mr-1.5 h-4 w-4" />
           Refresh
         </Button>

@@ -19,8 +19,8 @@ export function ExperienceManager() {
 
   useEffect(() => { load(); }, []);
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true);
     const { data } = await supabase.from('experience').select('*').order('sort_order');
     setItems(data ?? []);
     setLoading(false);
@@ -36,13 +36,18 @@ export function ExperienceManager() {
     setSaving(false);
     setEditing(null);
     setCreating(false);
-    load();
+    load(true);
   };
 
   const del = async (id: string) => {
     if (!confirm('Delete this experience entry?')) return;
-    await supabase.from('experience').delete().eq('id', id);
-    load();
+    const previous = items;
+    setItems((prev) => prev.filter((item) => item.id !== id));
+    const { error } = await supabase.from('experience').delete().eq('id', id);
+    if (error) {
+      setItems(previous);
+      alert(`Could not delete: ${error.message}`);
+    }
   };
 
   const reorder = async (exp: Experience, dir: 'up' | 'down') => {
@@ -55,7 +60,7 @@ export function ExperienceManager() {
       supabase.from('experience').update({ sort_order: swap.sort_order }).eq('id', exp.id),
       supabase.from('experience').update({ sort_order: exp.sort_order }).eq('id', swap.id),
     ]);
-    load();
+    load(true);
   };
 
   if (loading) {
