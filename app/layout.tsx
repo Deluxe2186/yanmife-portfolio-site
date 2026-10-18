@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/components/auth-provider';
+import { MotionProvider } from '@/components/motion-provider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -72,9 +73,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-            {children}
-          </AuthProvider>
+          <MotionProvider>
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </MotionProvider>
         </ThemeProvider>
       </body>
     </html>

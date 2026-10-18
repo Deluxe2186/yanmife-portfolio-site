@@ -67,8 +67,8 @@ export function SkillsSection() {
                     <motion.span
                       key={skill.id}
                       className="rounded-full border border-border bg-secondary px-3.5 py-1.5 text-sm font-medium text-secondary-foreground transition-all hover:border-primary hover:text-primary hover:glow-sm"
-                      initial={reduceMotion ? false : { opacity: 0, scale: 0.8 }}
-                      whileInView={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
                       transition={{
                         duration: 0.3,
