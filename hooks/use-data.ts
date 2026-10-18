@@ -18,7 +18,10 @@ export function useProjects() {
         .select('*')
         .order('sort_order', { ascending: true });
       if (cancelled) return;
-      if (error) setError(error.message);
+      if (error) {
+        console.error('[supabase]', error);
+        setError(error.message);
+      }
       else setProjects(data ?? []);
       setLoading(false);
     })();
@@ -41,7 +44,10 @@ export function useSkills() {
         .select('*')
         .order('sort_order', { ascending: true });
       if (cancelled) return;
-      if (error) setError(error.message);
+      if (error) {
+        console.error('[supabase]', error);
+        setError(error.message);
+      }
       else setSkills(data ?? []);
       setLoading(false);
     })();
@@ -64,7 +70,10 @@ export function useExperience() {
         .select('*')
         .order('sort_order', { ascending: true });
       if (cancelled) return;
-      if (error) setError(error.message);
+      if (error) {
+        console.error('[supabase]', error);
+        setError(error.message);
+      }
       else setExperience(data ?? []);
       setLoading(false);
     })();
