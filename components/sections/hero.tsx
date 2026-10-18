@@ -59,16 +59,6 @@ export function Hero() {
       <div className="absolute left-1/2 top-1/3 -z-10 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full glow-ambient" />
 
       <div className="mx-auto w-full max-w-4xl px-4 text-center sm:px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: reduceMotion ? 0 : 0.2 }}
-          className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-card/50 px-4 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur glow-sm"
-        >
-          <span className="flex h-2 w-2 rounded-full bg-success glow-sm" />
-          Available for freelance work
-        </motion.div>
-
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -76,7 +66,10 @@ export function Hero() {
           className="text-balance text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl"
         >
           Hi, I&apos;m Yanmife. I design and build{' '}
-          <span className="text-primary glow-text">clean, easy-to-use</span> websites and
+          <span className="text-primary glow-text sm:whitespace-nowrap">
+            clean, <span className="whitespace-nowrap">easy-to-use</span>
+          </span>{' '}
+          websites and
           apps.
         </motion.h1>
 
