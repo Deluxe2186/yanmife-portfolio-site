@@ -8,11 +8,9 @@ export function PageIntro() {
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
-    const timer = setTimeout(() => setShow(false), reduceMotion ? 300 : 1400);
+    const timer = setTimeout(() => setShow(false), reduceMotion ? 0 : 1400);
     return () => clearTimeout(timer);
   }, [reduceMotion]);
-
-  if (reduceMotion) return null;
 
   return (
     <AnimatePresence>
@@ -20,7 +18,7 @@ export function PageIntro() {
         <motion.div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-background"
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: reduceMotion ? 0 : 0.5 }}
         >
           <motion.div
             className="flex flex-col items-center gap-4"
