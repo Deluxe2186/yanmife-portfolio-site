@@ -30,7 +30,7 @@ export function ExperienceSection() {
       <SectionHeading
         eyebrow="Experience"
         title="Where I've worked"
-        subtitle="My journey so far — from internship to freelance."
+        subtitle="An internship and my freelance work so far."
       />
 
       {error && (
@@ -79,7 +79,7 @@ export function ExperienceSection() {
                       {exp.role}
                     </h3>
                     <span className="text-xs font-medium text-muted-foreground">
-                      {formatDate(exp.start_date)} —{' '}
+                      {formatDate(exp.start_date)} -{' '}
                       {formatDate(exp.end_date, !exp.end_date)}
                     </span>
                   </div>

@@ -53,7 +53,7 @@ export function AboutSection() {
       <SectionHeading
         eyebrow="About"
         title="A bit about me"
-        subtitle="Get to know the person behind the work."
+        subtitle="Who I am and what I do."
       />
 
       <div className="grid items-center gap-10 sm:grid-cols-2 lg:gap-16">
@@ -92,9 +92,9 @@ export function AboutSection() {
             {siteConfig.bio}
           </p>
           <p className="mt-4 text-balance text-base leading-relaxed text-muted-foreground">
-            I&apos;m currently expanding my skills in data cleaning and normalization,
-            and I&apos;m always looking for new projects that challenge me to think
-            differently about user experience.
+            Lately I&apos;ve been learning data cleaning and normalization,
+            mostly in Excel. I like projects where I have to think hard about
+            how people will actually use the thing.
           </p>
 
           <div className="mt-10 grid grid-cols-3 gap-4">

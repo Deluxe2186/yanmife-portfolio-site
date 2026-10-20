@@ -64,7 +64,7 @@ export function ContactSection() {
       <SectionHeading
         eyebrow="Contact"
         title="Let's work together"
-        subtitle="Have a project in mind? Send me a message and I'll get back to you."
+        subtitle="Got a project in mind? Send me a message and I'll reply as soon as I can."
       />
 
       <div className="grid gap-8 sm:grid-cols-3">
@@ -190,7 +190,7 @@ export function ContactSection() {
               className="flex items-center gap-2 rounded-lg border border-success/30 bg-success/5 p-3 text-sm text-success"
             >
               <CheckCircle className="h-4 w-4" />
-              Thanks for reaching out! I&apos;ll get back to you soon.
+              Thanks, I got your message. I&apos;ll reply soon.
             </motion.div>
           )}
 

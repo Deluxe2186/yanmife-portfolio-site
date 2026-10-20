@@ -29,7 +29,7 @@ export function WorkSection() {
       <SectionHeading
         eyebrow="Work"
         title="Selected Projects"
-        subtitle="A mix of UI/UX design and web development work. Click any project to see the full case study."
+        subtitle="Some of my UI/UX and web work. Click a project to read more."
       />
 
       <div className="mb-10 flex flex-wrap items-center gap-2">

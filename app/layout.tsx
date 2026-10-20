@@ -13,7 +13,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://yanmife-portfolio.com'),
-  title: 'Yanmife — UI/UX Designer & Web Developer in Lagos',
+  title: 'Yanmife | UI/UX Designer & Web Developer in Lagos',
   description:
     `Hi, I'm Yanmife. I design and build clean, easy-to-use websites and apps. Based in Lagos, Nigeria. Available for freelance work.`,
   keywords: [
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'Yanmife' }],
   creator: 'Yanmife',
   openGraph: {
-    title: 'Yanmife — UI/UX Designer & Web Developer in Lagos',
+    title: 'Yanmife | UI/UX Designer & Web Developer in Lagos',
     description:
       'I design and build clean, easy-to-use websites and apps. Based in Lagos, Nigeria.',
     type: 'website',
@@ -41,13 +41,13 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Yanmife — UI/UX Designer & Web Developer',
+        alt: 'Yanmife | UI/UX Designer & Web Developer',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Yanmife — UI/UX Designer & Web Developer',
+    title: 'Yanmife | UI/UX Designer & Web Developer',
     description:
       'I design and build clean, easy-to-use websites and apps. Based in Lagos, Nigeria.',
     images: ['/og-image.png'],

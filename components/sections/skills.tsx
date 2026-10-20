@@ -11,9 +11,9 @@ import type { SkillCategory } from '@/lib/types';
 const categoryOrder: SkillCategory[] = ['Design', 'Development', 'Data'];
 
 const categoryIcons: Record<SkillCategory, string> = {
-  Design: 'Design tools and methods I use to craft interfaces.',
-  Development: 'Technologies I build with.',
-  Data: 'Tools for cleaning and making sense of data.',
+  Design: 'What I use to design screens and flows.',
+  Development: 'What I build with.',
+  Data: 'What I use to clean up messy data.',
 };
 
 export function SkillsSection() {
@@ -30,7 +30,7 @@ export function SkillsSection() {
       <SectionHeading
         eyebrow="Skills"
         title="What I work with"
-        subtitle="A growing toolkit across design, development, and data."
+        subtitle="The tools I use for design, code and data."
       />
 
       {error && (
