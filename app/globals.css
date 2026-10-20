@@ -10,30 +10,30 @@
     --card-foreground: 256 40% 8%;
     --popover: 0 0% 100%;
     --popover-foreground: 256 40% 8%;
-    --primary: 275 100% 46%;
+    --primary: 271 91% 65%;
     --primary-foreground: 0 0% 100%;
     --secondary: 270 60% 96%;
     --secondary-foreground: 262 40% 14%;
     --muted: 270 40% 96%;
     --muted-foreground: 262 12% 40%;
-    --accent: 275 100% 46%;
+    --accent: 271 91% 65%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     --border: 270 30% 89%;
     --input: 270 30% 89%;
-    --ring: 275 100% 46%;
+    --ring: 271 91% 65%;
     --radius: 0.75rem;
 
     --success: 142 71% 45%;
     --warning: 38 92% 50%;
-    --info: 275 100% 46%;
+    --info: 271 91% 65%;
 
-    --chart-1: 275 100% 46%;
+    --chart-1: 271 91% 65%;
     --chart-2: 142 71% 45%;
     --chart-3: 38 92% 50%;
-    --chart-4: 290 90% 50%;
-    --chart-5: 330 85% 52%;
+    --chart-4: 276 80% 60%;
+    --chart-5: 340 75% 55%;
 
     /* How strong the glowing shapes in the background are. */
     --orb-strength: 0.45;
@@ -47,30 +47,29 @@
     --card-foreground: 260 40% 97%;
     --popover: 256 40% 8%;
     --popover-foreground: 260 40% 97%;
-    /* Neon purple. Dark text on it keeps buttons readable (about 5:1). */
-    --primary: 280 100% 62%;
-    --primary-foreground: 256 50% 5%;
+    --primary: 271 91% 70%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 262 40% 14%;
     --secondary-foreground: 260 40% 96%;
     --muted: 260 32% 12%;
     --muted-foreground: 262 20% 70%;
-    --accent: 280 100% 62%;
-    --accent-foreground: 256 50% 5%;
+    --accent: 271 91% 70%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     --border: 268 45% 20%;
     --input: 268 45% 20%;
-    --ring: 280 100% 62%;
+    --ring: 271 91% 70%;
 
     --success: 142 71% 45%;
     --warning: 38 92% 50%;
-    --info: 280 100% 62%;
+    --info: 271 91% 70%;
 
-    --chart-1: 280 100% 62%;
+    --chart-1: 271 91% 70%;
     --chart-2: 142 71% 45%;
     --chart-3: 38 92% 50%;
-    --chart-4: 290 100% 66%;
-    --chart-5: 330 90% 62%;
+    --chart-4: 276 80% 60%;
+    --chart-5: 340 75% 55%;
 
     --orb-strength: 1;
   }
@@ -104,19 +103,16 @@
     background-size: 48px 48px;
   }
   .glow {
-    box-shadow: 0 0 28px hsl(var(--primary) / 0.45);
+    box-shadow: 0 0 24px hsl(var(--primary) / 0.35);
   }
   .glow-sm {
-    box-shadow: 0 0 14px hsl(var(--primary) / 0.35);
+    box-shadow: 0 0 12px hsl(var(--primary) / 0.25);
   }
   .glow-lg {
     box-shadow: 0 0 40px hsl(var(--primary) / 0.4), 0 0 80px hsl(var(--primary) / 0.15);
   }
   .glow-text {
-    text-shadow: 0 0 18px hsl(var(--primary) / 0.3);
-  }
-  .dark .glow-text {
-    text-shadow: 0 0 10px hsl(var(--primary) / 0.7), 0 0 32px hsl(var(--primary) / 0.45);
+    text-shadow: 0 0 20px hsl(var(--primary) / 0.5);
   }
   .glow-border {
     box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3), 0 0 20px hsl(var(--primary) / 0.2);
@@ -219,7 +215,7 @@ html {
   left: -22vmax;
   background:
     radial-gradient(ellipse 56% 46% at 44% 42%, hsl(var(--primary) / 0.5), transparent 70%),
-    radial-gradient(ellipse 44% 50% at 64% 56%, hsl(262 100% 62% / 0.32), transparent 70%);
+    radial-gradient(ellipse 44% 50% at 64% 56%, hsl(265 90% 68% / 0.32), transparent 70%);
 }
 .space-orb-b {
   width: 64vmax;
@@ -229,7 +225,7 @@ html {
   animation-duration: 21s;
   animation-delay: -7s;
   background:
-    radial-gradient(ellipse 54% 46% at 58% 42%, hsl(262 100% 62% / 0.45), transparent 70%),
+    radial-gradient(ellipse 54% 46% at 58% 42%, hsl(265 90% 68% / 0.45), transparent 70%),
     radial-gradient(ellipse 42% 50% at 36% 62%, hsl(var(--primary) / 0.3), transparent 70%);
 }
 .space-orb-c {
@@ -240,7 +236,7 @@ html {
   animation-duration: 13s;
   animation-delay: -4s;
   background:
-    radial-gradient(ellipse 56% 44% at 46% 44%, hsl(292 100% 62% / 0.3), transparent 70%),
+    radial-gradient(ellipse 56% 44% at 46% 44%, hsl(285 85% 68% / 0.3), transparent 70%),
     radial-gradient(ellipse 38% 48% at 62% 58%, hsl(var(--primary) / 0.22), transparent 70%);
 }
 @keyframes orb-breathe {
