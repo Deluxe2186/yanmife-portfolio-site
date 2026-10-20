@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase/client';
 import { siteConfig } from '@/lib/site-config';
 import { useCv } from '@/hooks/use-data';
 import { formatSize } from '@/lib/storage-files';
+import { CopyEmail } from '@/components/copy-email';
 import { SectionReveal } from '@/components/section-reveal';
 import { SectionHeading } from '@/components/section-heading';
 import { Button } from '@/components/ui/button';
@@ -72,16 +73,7 @@ export function ContactSection() {
 
       <div className="grid gap-8 sm:grid-cols-3">
         <div className="sm:col-span-1 space-y-4">
-          <a
-            href={`mailto:${siteConfig.email}`}
-            className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-sm transition-colors hover:border-primary"
-          >
-            <Mail className="h-5 w-5 text-primary" />
-            <div>
-              <p className="font-medium">Email</p>
-              <p className="text-xs text-muted-foreground">{siteConfig.email}</p>
-            </div>
-          </a>
+          <CopyEmail email={siteConfig.email} />
           {cv && (
             <a
               href={cv.downloadUrl}
