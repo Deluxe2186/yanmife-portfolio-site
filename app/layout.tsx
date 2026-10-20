@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/components/auth-provider';
 import { MotionProvider } from '@/components/motion-provider';
+import { SpaceBackground } from '@/components/space-background';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -69,10 +70,11 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
+          <SpaceBackground />
           <MotionProvider>
             <AuthProvider>
               {children}
