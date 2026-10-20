@@ -12,7 +12,7 @@ import { useProfilePhoto } from '@/hooks/use-data';
 function Stat({ value, label }: { value: number; label: string }) {
   return (
     <div className="text-center">
-      <div className="text-4xl font-bold tracking-tight text-primary glow-text sm:text-5xl">
+      <div className="text-4xl font-bold tracking-tight text-primary sm:text-5xl">
         <SlotNumber value={value} suffix="+" />
       </div>
       <p className="mt-2 text-sm text-muted-foreground">{label}</p>
