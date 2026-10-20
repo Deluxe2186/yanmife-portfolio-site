@@ -15,7 +15,6 @@ export const siteConfig = {
     { label: 'Years learning', value: 3 },
     { label: 'Tools used', value: 12 },
   ],
-  cvUrl: '/cv.pdf',
 };
 
 export interface SocialLink {

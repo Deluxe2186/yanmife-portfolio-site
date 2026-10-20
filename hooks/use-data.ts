@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchProfilePhoto } from '@/lib/profile-photo';
+import { fetchCv, type Cv } from '@/lib/cv';
 import type { Project, Skill, Experience } from '@/lib/types';
 
 export function useProjects() {
@@ -103,4 +104,23 @@ export function useProfilePhoto() {
   }, []);
 
   return { url, loading };
+}
+
+export function useCv() {
+  const [cv, setCv] = useState<Cv | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const found = await fetchCv();
+        if (!cancelled) setCv(found);
+      } catch (err) {
+        console.error('[supabase] cv', err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  return cv;
 }

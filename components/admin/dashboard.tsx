@@ -9,6 +9,7 @@ import { ProjectsManager } from '@/components/admin/projects-manager';
 import { SkillsManager } from '@/components/admin/skills-manager';
 import { ExperienceManager } from '@/components/admin/experience-manager';
 import { ProfileManager } from '@/components/admin/profile-manager';
+import { CvManager } from '@/components/admin/cv-manager';
 import { MessagesManager } from '@/components/admin/messages-manager';
 
 type Tab = 'projects' | 'skills' | 'experience' | 'profile' | 'messages';
@@ -17,7 +18,7 @@ const tabs: { id: Tab; label: string; icon: typeof FolderKanban }[] = [
   { id: 'projects', label: 'Projects', icon: FolderKanban },
   { id: 'skills', label: 'Skills', icon: Wrench },
   { id: 'experience', label: 'Experience', icon: Briefcase },
-  { id: 'profile', label: 'Profile', icon: UserCircle },
+  { id: 'profile', label: 'Profile & CV', icon: UserCircle },
   { id: 'messages', label: 'Messages', icon: Mail },
 ];
 
@@ -79,7 +80,14 @@ export function AdminDashboard() {
         {activeTab === 'projects' && <ProjectsManager />}
         {activeTab === 'skills' && <SkillsManager />}
         {activeTab === 'experience' && <ExperienceManager />}
-        {activeTab === 'profile' && <ProfileManager />}
+        {activeTab === 'profile' && (
+          <div className="space-y-12">
+            <ProfileManager />
+            <div className="border-t border-border pt-10">
+              <CvManager />
+            </div>
+          </div>
+        )}
         {activeTab === 'messages' && <MessagesManager />}
       </div>
     </div>

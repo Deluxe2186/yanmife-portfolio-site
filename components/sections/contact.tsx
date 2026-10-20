@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, CheckCircle, Download, Mail, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { siteConfig } from '@/lib/site-config';
+import { useCv } from '@/hooks/use-data';
+import { formatSize } from '@/lib/storage-files';
 import { SectionReveal } from '@/components/section-reveal';
 import { SectionHeading } from '@/components/section-heading';
 import { Button } from '@/components/ui/button';
@@ -16,6 +18,7 @@ import { Label } from '@/components/ui/label';
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
 export function ContactSection() {
+  const cv = useCv();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -79,17 +82,20 @@ export function ContactSection() {
               <p className="text-xs text-muted-foreground">{siteConfig.email}</p>
             </div>
           </a>
-          <a
-            href={siteConfig.cvUrl}
-            download
-            className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-sm transition-colors hover:border-primary"
-          >
-            <Download className="h-5 w-5 text-primary" />
-            <div>
-              <p className="font-medium">Download CV</p>
-              <p className="text-xs text-muted-foreground">PDF, 120KB</p>
-            </div>
-          </a>
+          {cv && (
+            <a
+              href={cv.downloadUrl}
+              className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-sm transition-colors hover:border-primary"
+            >
+              <Download className="h-5 w-5 text-primary" />
+              <div>
+                <p className="font-medium">Download CV</p>
+                <p className="text-xs text-muted-foreground">
+                  PDF{cv.size ? `, ${formatSize(cv.size)}` : ''}
+                </p>
+              </div>
+            </a>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="sm:col-span-2 space-y-4">
