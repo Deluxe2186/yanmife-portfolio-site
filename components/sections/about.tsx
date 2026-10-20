@@ -1,43 +1,19 @@
 'use client';
 
-import { useReducedMotion } from '@/hooks/use-reduced-motion';
-import { useEffect, useRef, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { siteConfig } from '@/lib/site-config';
 import { SectionReveal } from '@/components/section-reveal';
 import { SectionHeading } from '@/components/section-heading';
+import { SlotNumber } from '@/components/slot-number';
 import { User } from 'lucide-react';
 import { useProfilePhoto } from '@/hooks/use-data';
 
-function CountUp({ value, label }: { value: number; label: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: '-40px' });
-  const [count, setCount] = useState(0);
-  const reduceMotion = useReducedMotion();
-
-  useEffect(() => {
-    if (!inView) return;
-    if (reduceMotion) {
-      setCount(value);
-      return;
-    }
-    let raf = 0;
-    const duration = 1600;
-    const start = performance.now();
-    const tick = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.round(eased * value));
-      if (progress < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [inView, value, reduceMotion]);
-
+function Stat({ value, label }: { value: number; label: string }) {
   return (
-    <div ref={ref} className="text-center">
-      <div className="text-4xl font-bold tracking-tight text-primary sm:text-5xl">
-        {count}+
+    <div className="text-center">
+      <div className="text-4xl font-bold tracking-tight text-primary glow-text sm:text-5xl">
+        <SlotNumber value={value} suffix="+" />
       </div>
       <p className="mt-2 text-sm text-muted-foreground">{label}</p>
     </div>
@@ -53,7 +29,7 @@ export function AboutSection() {
       <SectionHeading
         eyebrow="About"
         title="A bit about me"
-        subtitle="Get to know the person behind the work."
+        subtitle="Who I am and what I do."
       />
 
       <div className="grid items-center gap-10 sm:grid-cols-2 lg:gap-16">
@@ -92,14 +68,14 @@ export function AboutSection() {
             {siteConfig.bio}
           </p>
           <p className="mt-4 text-balance text-base leading-relaxed text-muted-foreground">
-            I&apos;m currently expanding my skills in data cleaning and normalization,
-            and I&apos;m always looking for new projects that challenge me to think
-            differently about user experience.
+            Lately I&apos;ve been learning data cleaning and normalization,
+            mostly in Excel. I like projects where I have to think hard about
+            how people will actually use the thing.
           </p>
 
           <div className="mt-10 grid grid-cols-3 gap-4">
             {siteConfig.stats.map((stat) => (
-              <CountUp key={stat.label} value={stat.value} label={stat.label} />
+              <Stat key={stat.label} value={stat.value} label={stat.label} />
             ))}
           </div>
         </div>

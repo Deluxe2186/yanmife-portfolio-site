@@ -8,14 +8,13 @@ export const siteConfig = {
   role: 'UI/UX Designer & Web Developer',
   location: 'Lagos, Nigeria',
   email: 'yanmife.arayela@gmail.com',
-  bio: `I'm a UI/UX designer and web developer based in Lagos, Nigeria. I design and build clean, easy-to-use websites and apps that help businesses grow. I care about thoughtful details, accessible interfaces, and getting the fundamentals right.`,
+  bio: `I'm a UI/UX designer and web developer based in Lagos, Nigeria. I design in Figma and build with Next.js and CSS. I like clear layouts and small details done right, and I want what I build to be easy for anyone to use.`,
   roles: ['UI/UX Designer', 'Web Developer', 'Data Cleaner'],
   stats: [
     { label: 'Projects completed', value: 24 },
     { label: 'Years learning', value: 3 },
     { label: 'Tools used', value: 12 },
   ],
-  cvUrl: '/cv.pdf',
 };
 
 export interface SocialLink {

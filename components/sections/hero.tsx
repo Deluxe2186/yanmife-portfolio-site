@@ -90,8 +90,7 @@ export function Hero() {
           transition={{ duration: 0.6, delay: reduceMotion ? 0 : 0.6 }}
           className="mx-auto mt-4 max-w-xl text-balance text-sm text-muted-foreground sm:text-base"
         >
-          I help businesses and individuals turn ideas into thoughtful, accessible
-          digital experiences — from first wireframe to final deploy.
+          I work on a project from the first wireframe to the day it goes live.
         </motion.p>
 
         <motion.div

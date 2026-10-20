@@ -4,68 +4,75 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 220 20% 8%;
+    --background: 270 40% 99%;
+    --foreground: 256 40% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 8%;
+    --card-foreground: 256 40% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 8%;
-    --primary: 271 91% 65%;
+    --popover-foreground: 256 40% 8%;
+    --primary: 275 100% 46%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 270 20% 95%;
-    --secondary-foreground: 271 30% 15%;
-    --muted: 270 16% 96%;
-    --muted-foreground: 270 10% 42%;
-    --accent: 271 91% 65%;
+    --secondary: 270 60% 96%;
+    --secondary-foreground: 262 40% 14%;
+    --muted: 270 40% 96%;
+    --muted-foreground: 262 12% 40%;
+    --accent: 275 100% 46%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 270 13% 91%;
-    --input: 270 13% 91%;
-    --ring: 271 91% 65%;
+    --border: 270 30% 89%;
+    --input: 270 30% 89%;
+    --ring: 275 100% 46%;
     --radius: 0.75rem;
 
     --success: 142 71% 45%;
     --warning: 38 92% 50%;
-    --info: 271 91% 65%;
+    --info: 275 100% 46%;
 
-    --chart-1: 271 91% 65%;
+    --chart-1: 275 100% 46%;
     --chart-2: 142 71% 45%;
     --chart-3: 38 92% 50%;
-    --chart-4: 276 80% 60%;
-    --chart-5: 340 75% 55%?
+    --chart-4: 290 90% 50%;
+    --chart-5: 330 85% 52%;
+
+    /* How strong the glowing shapes in the background are. */
+    --orb-strength: 0.45;
   }
 
   .dark {
-    --background: 220 25% 6%;
-    --foreground: 210 20% 98%;
-    --card: 220 22% 9%;
-    --card-foreground: 210 20% 98%;
-    --popover: 220 22% 9%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 271 91% 70%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 271 15% 16%;
-    --secondary-foreground: 271 20% 95%;
-    --muted: 271 15% 14%;
-    --muted-foreground: 271 10% 62%;
-    --accent: 271 91% 70%;
-    --accent-foreground: 0 0% 100%;
+    /* Deep space: near-black with a violet tint. */
+    --background: 256 50% 4%;
+    --foreground: 260 40% 97%;
+    --card: 256 40% 8%;
+    --card-foreground: 260 40% 97%;
+    --popover: 256 40% 8%;
+    --popover-foreground: 260 40% 97%;
+    /* Neon purple. Dark text on it keeps buttons readable (about 5:1). */
+    --primary: 280 100% 62%;
+    --primary-foreground: 256 50% 5%;
+    --secondary: 262 40% 14%;
+    --secondary-foreground: 260 40% 96%;
+    --muted: 260 32% 12%;
+    --muted-foreground: 262 20% 70%;
+    --accent: 280 100% 62%;
+    --accent-foreground: 256 50% 5%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 271 15% 18%;
-    --input: 271 15% 18%;
-    --ring: 271 91% 70%;
+    --border: 268 45% 20%;
+    --input: 268 45% 20%;
+    --ring: 280 100% 62%;
 
     --success: 142 71% 45%;
     --warning: 38 92% 50%;
-    --info: 271 91% 70%;
+    --info: 280 100% 62%;
 
-    --chart-1: 271 91% 70%;
+    --chart-1: 280 100% 62%;
     --chart-2: 142 71% 45%;
     --chart-3: 38 92% 50%;
-    --chart-4: 276 80% 60%;
-    --chart-5: 340 75% 55%?
+    --chart-4: 290 100% 66%;
+    --chart-5: 330 90% 62%;
+
+    --orb-strength: 1;
   }
 }
 
@@ -97,16 +104,19 @@
     background-size: 48px 48px;
   }
   .glow {
-    box-shadow: 0 0 24px hsl(var(--primary) / 0.35);
+    box-shadow: 0 0 28px hsl(var(--primary) / 0.45);
   }
   .glow-sm {
-    box-shadow: 0 0 12px hsl(var(--primary) / 0.25);
+    box-shadow: 0 0 14px hsl(var(--primary) / 0.35);
   }
   .glow-lg {
     box-shadow: 0 0 40px hsl(var(--primary) / 0.4), 0 0 80px hsl(var(--primary) / 0.15);
   }
   .glow-text {
-    text-shadow: 0 0 20px hsl(var(--primary) / 0.5);
+    text-shadow: 0 0 18px hsl(var(--primary) / 0.3);
+  }
+  .dark .glow-text {
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.7), 0 0 32px hsl(var(--primary) / 0.45);
   }
   .glow-border {
     box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3), 0 0 20px hsl(var(--primary) / 0.2);
@@ -138,4 +148,119 @@ html {
 
 .glow-pulse {
   animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* ---------- Space background ----------
+   Pure CSS: no images, no JavaScript, no blur filters. Only transform and
+   opacity are animated, so the browser handles it on the graphics card and
+   it does not slow down loading or scrolling. */
+
+.space-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  /* Fades in after the page has loaded. */
+  animation: space-fade-in 2.5s ease-out 0.8s forwards;
+}
+
+@keyframes space-fade-in {
+  to { opacity: var(--orb-strength, 1); }
+}
+
+/* A few small stars. Each tile repeats, so it stays one cheap image. */
+.space-stars {
+  position: absolute;
+  inset: 0;
+  display: none;
+  opacity: 0.55;
+  background-image:
+    radial-gradient(1px 1px at 38px 62px, #fff, transparent),
+    radial-gradient(1px 1px at 190px 24px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1.5px 1.5px at 310px 140px, #fff, transparent),
+    radial-gradient(1px 1px at 120px 210px, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1px 1px at 390px 300px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 240px 370px, #fff, transparent);
+  background-size: 420px 420px;
+}
+.dark .space-stars {
+  display: block;
+}
+.space-stars-b {
+  opacity: 0.5;
+  background-image:
+    radial-gradient(1.5px 1.5px at 70px 120px, hsl(280 100% 85%), transparent),
+    radial-gradient(1px 1px at 330px 60px, hsl(280 100% 90%), transparent),
+    radial-gradient(2px 2px at 220px 260px, hsl(280 100% 88%), transparent),
+    radial-gradient(1px 1px at 520px 400px, hsl(280 100% 90%), transparent);
+  background-size: 610px 610px;
+  animation: star-twinkle 7s ease-in-out infinite;
+}
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.7; }
+}
+
+/* Soft glowing shapes. Each one is two overlapping ellipses of colour that
+   fade to nothing at the edges, so the shape looks organic and glowy
+   without any blur. They slowly grow, shrink and drift, like breathing.
+   Each gradient is sized to fade out fully inside its box, so no hard edge shows. */
+.space-orb {
+  position: absolute;
+  will-change: transform, opacity;
+  animation: orb-breathe 16s ease-in-out infinite;
+}
+.space-orb-a {
+  width: 70vmax;
+  height: 56vmax;
+  top: -20vmax;
+  left: -22vmax;
+  background:
+    radial-gradient(ellipse 56% 46% at 44% 42%, hsl(var(--primary) / 0.5), transparent 70%),
+    radial-gradient(ellipse 44% 50% at 64% 56%, hsl(262 100% 62% / 0.32), transparent 70%);
+}
+.space-orb-b {
+  width: 64vmax;
+  height: 52vmax;
+  right: -20vmax;
+  bottom: -24vmax;
+  animation-duration: 21s;
+  animation-delay: -7s;
+  background:
+    radial-gradient(ellipse 54% 46% at 58% 42%, hsl(262 100% 62% / 0.45), transparent 70%),
+    radial-gradient(ellipse 42% 50% at 36% 62%, hsl(var(--primary) / 0.3), transparent 70%);
+}
+.space-orb-c {
+  width: 34vmax;
+  height: 28vmax;
+  top: 42%;
+  right: 10%;
+  animation-duration: 13s;
+  animation-delay: -4s;
+  background:
+    radial-gradient(ellipse 56% 44% at 46% 44%, hsl(292 100% 62% / 0.3), transparent 70%),
+    radial-gradient(ellipse 38% 48% at 62% 58%, hsl(var(--primary) / 0.22), transparent 70%);
+}
+@keyframes orb-breathe {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(0.88) rotate(0deg);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate3d(3vmax, 2vmax, 0) scale(1.14) rotate(14deg);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .space-orb-c { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .space-orb,
+  .space-stars-b {
+    animation: none;
+  }
 }

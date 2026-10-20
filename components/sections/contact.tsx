@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, CheckCircle, Download, Mail, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { siteConfig } from '@/lib/site-config';
+import { useCv } from '@/hooks/use-data';
+import { formatSize } from '@/lib/storage-files';
 import { SectionReveal } from '@/components/section-reveal';
 import { SectionHeading } from '@/components/section-heading';
 import { Button } from '@/components/ui/button';
@@ -16,6 +18,7 @@ import { Label } from '@/components/ui/label';
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
 export function ContactSection() {
+  const cv = useCv();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -64,7 +67,7 @@ export function ContactSection() {
       <SectionHeading
         eyebrow="Contact"
         title="Let's work together"
-        subtitle="Have a project in mind? Send me a message and I'll get back to you."
+        subtitle="Got a project in mind? Send me a message and I'll reply as soon as I can."
       />
 
       <div className="grid gap-8 sm:grid-cols-3">
@@ -79,17 +82,20 @@ export function ContactSection() {
               <p className="text-xs text-muted-foreground">{siteConfig.email}</p>
             </div>
           </a>
-          <a
-            href={siteConfig.cvUrl}
-            download
-            className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-sm transition-colors hover:border-primary"
-          >
-            <Download className="h-5 w-5 text-primary" />
-            <div>
-              <p className="font-medium">Download CV</p>
-              <p className="text-xs text-muted-foreground">PDF, 120KB</p>
-            </div>
-          </a>
+          {cv && (
+            <a
+              href={cv.downloadUrl}
+              className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-sm transition-colors hover:border-primary"
+            >
+              <Download className="h-5 w-5 text-primary" />
+              <div>
+                <p className="font-medium">Download CV</p>
+                <p className="text-xs text-muted-foreground">
+                  PDF{cv.size ? `, ${formatSize(cv.size)}` : ''}
+                </p>
+              </div>
+            </a>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="sm:col-span-2 space-y-4">
@@ -190,7 +196,7 @@ export function ContactSection() {
               className="flex items-center gap-2 rounded-lg border border-success/30 bg-success/5 p-3 text-sm text-success"
             >
               <CheckCircle className="h-4 w-4" />
-              Thanks for reaching out! I&apos;ll get back to you soon.
+              Thanks, I got your message. I&apos;ll reply soon.
             </motion.div>
           )}
 

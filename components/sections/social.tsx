@@ -14,7 +14,7 @@ export function SocialSection() {
       <SectionHeading
         eyebrow="Connect"
         title="Find me elsewhere"
-        subtitle="I'm active on these platforms — let's connect."
+        subtitle="My profiles on other sites."
       />
 
       <div className="grid grid-cols-[repeat(auto-fit,minmax(8rem,1fr))] gap-3 sm:gap-4">

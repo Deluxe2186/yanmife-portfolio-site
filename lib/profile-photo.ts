@@ -1,6 +1,6 @@
-import { supabase } from '@/lib/supabase/client';
+import { BUCKET, listFolder, publicUrl } from '@/lib/storage-files';
 
-export const PROFILE_BUCKET = 'project-images';
+export const PROFILE_BUCKET = BUCKET;
 export const PROFILE_FOLDER = 'profile';
 
 export interface ProfilePhoto {
@@ -12,24 +12,8 @@ export interface ProfilePhoto {
 
 /** Finds the newest profile photo in storage. Anyone can read it. */
 export async function fetchProfilePhoto(): Promise<ProfilePhoto> {
-  const { data, error } = await supabase.storage
-    .from(PROFILE_BUCKET)
-    .list(PROFILE_FOLDER, {
-      limit: 50,
-      sortBy: { column: 'created_at', order: 'desc' },
-    });
-
-  if (error) throw error;
-
-  const names = (data ?? [])
-    .map((file) => file.name)
-    .filter((name) => name && !name.startsWith('.'));
-
+  const files = await listFolder(PROFILE_FOLDER);
+  const names = files.map((file) => file.name);
   if (names.length === 0) return { url: null, names: [] };
-
-  const { data: urlData } = supabase.storage
-    .from(PROFILE_BUCKET)
-    .getPublicUrl(`${PROFILE_FOLDER}/${names[0]}`);
-
-  return { url: urlData.publicUrl, names };
+  return { url: publicUrl(`${PROFILE_FOLDER}/${names[0]}`), names };
 }
