@@ -1,8 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Loader2, Lock } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
+import {
+  IDLE_LIMIT_MS,
+  MAX_SESSION_MS,
+  SIGNOUT_REASON_KEY,
+  describeMinutes,
+} from '@/lib/admin-session';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +19,22 @@ export function AdminLogin() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  // Say why the site signed you out, once.
+  useEffect(() => {
+    try {
+      const reason = sessionStorage.getItem(SIGNOUT_REASON_KEY);
+      if (reason === 'idle') {
+        setNotice(`You were signed out after ${describeMinutes(IDLE_LIMIT_MS)} of inactivity. Sign in again to continue.`);
+      } else if (reason === 'expired') {
+        setNotice(`Your sign-in reached its maximum length of ${describeMinutes(MAX_SESSION_MS)}. Sign in again to continue.`);
+      }
+      sessionStorage.removeItem(SIGNOUT_REASON_KEY);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +57,12 @@ export function AdminLogin() {
             Sign in to manage your portfolio
           </p>
         </div>
+
+        {notice && (
+          <p role="status" className="mb-4 rounded-xl border border-border bg-muted/40 p-3 text-center text-sm">
+            {notice}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
