@@ -59,6 +59,8 @@ Required variables:
 
 The file also adds a few sample rows so the site is not empty. Replace them from `/admin`.
 
+Then run any newer files in the same folder the same way, oldest first. For example `20261022090000_create_categories.sql` adds the Categories tab to the admin.
+
 ### 4. Set up Supabase Auth (for admin)
 
 1. Go to your Supabase dashboard → Authentication → Users

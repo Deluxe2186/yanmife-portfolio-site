@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchProfilePhoto } from '@/lib/profile-photo';
 import { fetchCv, type Cv } from '@/lib/cv';
-import type { Project, Skill, Experience } from '@/lib/types';
+import type { Project, Skill, Experience, Category } from '@/lib/types';
 
 export function useProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -123,4 +123,42 @@ export function useCv() {
   }, []);
 
   return cv;
+}
+
+/** True when Supabase says the categories table does not exist yet. */
+export function isMissingCategoriesTable(error: { code?: string; message?: string }) {
+  return (
+    error.code === 'PGRST205' ||
+    error.code === '42P01' ||
+    /categories/i.test(error.message ?? '') && /schema cache|does not exist/i.test(error.message ?? '')
+  );
+}
+
+export function useCategories() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [tableMissing, setTableMissing] = useState(false);
+
+  const reload = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    if (error) {
+      const missing = isMissingCategoriesTable(error);
+      if (!missing) console.error('[supabase] categories', error);
+      setTableMissing(missing);
+      setCategories([]);
+    } else {
+      setTableMissing(false);
+      setCategories(data ?? []);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  return { categories, setCategories, loading, tableMissing, reload };
 }

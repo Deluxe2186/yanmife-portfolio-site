@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Plus, Pencil, Trash2, X, ArrowUp, ArrowDown, Loader2, Upload } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import type { Project } from '@/lib/types';
+import { useCategories } from '@/hooks/use-data';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -53,6 +54,7 @@ export function ProjectsManager() {
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const { categories: categoryRows, tableMissing, reload: reloadCategories } = useCategories();
 
   useEffect(() => {
     loadProjects();
@@ -112,6 +114,27 @@ export function ProjectsManager() {
       supabase.from('projects').update({ sort_order: project.sort_order }).eq('id', swap.id),
     ]);
     loadProjects(true);
+  };
+
+  // Every category you can pick: your list, plus any a project already uses.
+  const categoryOptions = Array.from(
+    new Set([
+      ...categoryRows.map((c) => c.name),
+      ...projects.map((p) => p.category).filter(Boolean),
+      ...(tableMissing && projects.length === 0 ? ['Web', 'Mobile', 'Branding'] : []),
+    ])
+  );
+
+  /** Adds a category to your list. Returns an error message, or null when it worked. */
+  const handleCreateCategory = async (name: string): Promise<string | null> => {
+    // Before the categories table exists, a new name is just stored on the project.
+    if (tableMissing) return null;
+    if (categoryRows.some((c) => c.name.toLowerCase() === name.toLowerCase())) return null;
+    const next = Math.max(0, ...categoryRows.map((c) => c.sort_order)) + 1;
+    const { error } = await supabase.from('categories').insert({ name, sort_order: next });
+    if (error) return `Could not add the category: ${error.message}`;
+    await reloadCategories();
+    return null;
   };
 
   const handleUpload = async (
@@ -224,6 +247,8 @@ export function ProjectsManager() {
           onCancel={() => { setEditing(null); setCreating(false); }}
           onUpload={handleUpload}
           fileRef={fileRef}
+          categoryOptions={categoryOptions}
+          onCreateCategory={handleCreateCategory}
         />
       )}
     </div>
@@ -237,6 +262,8 @@ function ProjectForm({
   onCancel,
   onUpload,
   fileRef,
+  categoryOptions,
+  onCreateCategory,
 }: {
   project: Omit<Project, 'id' | 'created_at'> & { id?: string };
   saving: boolean;
@@ -244,6 +271,8 @@ function ProjectForm({
   onCancel: () => void;
   onUpload: (file: File, p: any) => Promise<{ url?: string; error?: string }>;
   fileRef: React.RefObject<HTMLInputElement>;
+  categoryOptions: string[];
+  onCreateCategory: (name: string) => Promise<string | null>;
 }) {
   const [form, setForm] = useState({ ...project });
   const [toolsText, setToolsText] = useState((project.tools ?? []).join(', '));
@@ -251,6 +280,28 @@ function ProjectForm({
   const [uploading, setUploading] = useState(false);
   const [uploadNote, setUploadNote] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
+  const [categoryError, setCategoryError] = useState<string | null>(null);
+
+  const options = categoryOptions.includes(form.category) || !form.category
+    ? categoryOptions
+    : [...categoryOptions, form.category];
+
+  const createCategory = async () => {
+    const name = newCategory.trim().replace(/\s+/g, ' ');
+    if (!name) return setCategoryError('Type a name first.');
+    if (name.length > 30) return setCategoryError('Keep it under 30 characters.');
+    if (name.toLowerCase() === 'all') return setCategoryError('"All" is added automatically.');
+    // Reuse the existing spelling if it is already in the list.
+    const existing = options.find((o) => o.toLowerCase() === name.toLowerCase());
+    const error = existing ? null : await onCreateCategory(name);
+    if (error) return setCategoryError(error);
+    update('category', existing ?? name);
+    setNewCategory('');
+    setCategoryError(null);
+    setAddingCategory(false);
+  };
 
   const update = (key: string, value: any) => setForm((f) => ({ ...f, [key]: value }));
 
@@ -311,14 +362,58 @@ function ProjectForm({
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label>Category</Label>
-              <Select value={form.category} onValueChange={(v) => update('category', v)}>
-                <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+              <Select
+                value={form.category}
+                onValueChange={(v) => {
+                  // The dropdown can briefly report an empty value right after a new
+                  // category is added. Ignore it so the category is not wiped.
+                  if (!v) return;
+                  if (v === '__new__') {
+                    setAddingCategory(true);
+                    return;
+                  }
+                  setAddingCategory(false);
+                  update('category', v);
+                }}
+              >
+                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Choose a category" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Web">Web</SelectItem>
-                  <SelectItem value="Mobile">Mobile</SelectItem>
-                  <SelectItem value="Branding">Branding</SelectItem>
+                  {options.map((name) => (
+                    <SelectItem key={name} value={name}>{name}</SelectItem>
+                  ))}
+                  <SelectItem value="__new__">+ New category...</SelectItem>
                 </SelectContent>
               </Select>
+              {addingCategory && (
+                <div className="mt-2">
+                  <div className="flex gap-2">
+                    <Input
+                      autoFocus
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault(); // do not save the whole project
+                          createCategory();
+                        }
+                      }}
+                      placeholder="Name of the new category"
+                      aria-label="New category name"
+                      maxLength={30}
+                    />
+                    <Button type="button" size="sm" onClick={createCategory}>Add</Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => { setAddingCategory(false); setCategoryError(null); }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                  {categoryError && <p className="mt-1 text-xs text-destructive">{categoryError}</p>}
+                </div>
+              )}
             </div>
             <div>
               <Label>Role</Label>
