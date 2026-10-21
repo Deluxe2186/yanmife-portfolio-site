@@ -1,21 +1,24 @@
 'use client';
 
 import { useState } from 'react';
-import { LogOut, FolderKanban, Wrench, Briefcase, Mail, Home, UserCircle } from 'lucide-react';
+import { LogOut, FolderKanban, Wrench, Briefcase, Mail, Home, UserCircle, Tags } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
+import { useAdminSessionGuard } from '@/hooks/use-admin-session-guard';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ProjectsManager } from '@/components/admin/projects-manager';
+import { CategoriesManager } from '@/components/admin/categories-manager';
 import { SkillsManager } from '@/components/admin/skills-manager';
 import { ExperienceManager } from '@/components/admin/experience-manager';
 import { ProfileManager } from '@/components/admin/profile-manager';
 import { CvManager } from '@/components/admin/cv-manager';
 import { MessagesManager } from '@/components/admin/messages-manager';
 
-type Tab = 'projects' | 'skills' | 'experience' | 'profile' | 'messages';
+type Tab = 'projects' | 'categories' | 'skills' | 'experience' | 'profile' | 'messages';
 
 const tabs: { id: Tab; label: string; icon: typeof FolderKanban }[] = [
   { id: 'projects', label: 'Projects', icon: FolderKanban },
+  { id: 'categories', label: 'Categories', icon: Tags },
   { id: 'skills', label: 'Skills', icon: Wrench },
   { id: 'experience', label: 'Experience', icon: Briefcase },
   { id: 'profile', label: 'Profile & CV', icon: UserCircle },
@@ -24,10 +27,30 @@ const tabs: { id: Tab; label: string; icon: typeof FolderKanban }[] = [
 
 export function AdminDashboard() {
   const { signOut, user } = useAuth();
+  const { secondsLeft, stayActive } = useAdminSessionGuard();
   const [activeTab, setActiveTab] = useState<Tab>('projects');
 
   return (
     <div className="min-h-screen bg-background">
+      {secondsLeft !== null && (
+        <div
+          role="alertdialog"
+          aria-live="assertive"
+          aria-label="Session about to end"
+          className="fixed bottom-4 right-4 z-50 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-border bg-card p-4 shadow-xl"
+        >
+          <p className="text-sm font-medium">
+            You will be signed out in {secondsLeft} second{secondsLeft === 1 ? '' : 's'}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            There has been no activity for a while. This keeps your admin safe.
+          </p>
+          <div className="mt-3 flex gap-2">
+            <Button size="sm" onClick={stayActive}>Stay signed in</Button>
+            <Button size="sm" variant="ghost" onClick={() => signOut()}>Sign out now</Button>
+          </div>
+        </div>
+      )}
       <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
           <div className="flex items-center gap-3">
@@ -78,6 +101,7 @@ export function AdminDashboard() {
         </div>
 
         {activeTab === 'projects' && <ProjectsManager />}
+        {activeTab === 'categories' && <CategoriesManager />}
         {activeTab === 'skills' && <SkillsManager />}
         {activeTab === 'experience' && <ExperienceManager />}
         {activeTab === 'profile' && (

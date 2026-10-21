@@ -40,5 +40,11 @@ export interface Message {
   created_at: string;
 }
 
-export type ProjectCategory = 'All' | 'Web' | 'Mobile' | 'Branding';
+export interface Category {
+  id: string;
+  name: string;
+  sort_order: number;
+}
+
+export type ProjectCategory = string;
 export type SkillCategory = 'Design' | 'Development' | 'Data';

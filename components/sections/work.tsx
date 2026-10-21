@@ -4,20 +4,31 @@ import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight, MousePointerClick, X, ExternalLink, Figma } from 'lucide-react';
-import { useProjects } from '@/hooks/use-data';
-import type { Project, ProjectCategory } from '@/lib/types';
+import { useProjects, useCategories } from '@/hooks/use-data';
+import type { Project } from '@/lib/types';
 import { SectionReveal } from '@/components/section-reveal';
 import { SectionHeading } from '@/components/section-heading';
 import { ProjectSkeleton } from '@/components/project-skeleton';
 import { Button } from '@/components/ui/button';
 
-const categories: ProjectCategory[] = ['All', 'Web', 'Mobile', 'Branding'];
-
 export function WorkSection() {
   const { projects, loading, error } = useProjects();
-  const [filter, setFilter] = useState<ProjectCategory>('All');
+  const { categories: categoryRows } = useCategories();
+  const [chosen, setFilter] = useState('All');
   const [selected, setSelected] = useState<Project | null>(null);
   const reduceMotion = useReducedMotion();
+
+  // Filter buttons come from your categories, in your order. A category with
+  // no projects is left out, so nobody clicks into an empty list.
+  const categories = useMemo(() => {
+    const used = new Set(projects.map((p) => p.category).filter(Boolean));
+    const ordered = categoryRows.map((c) => c.name).filter((name) => used.has(name));
+    const extra = Array.from(used).filter((name) => !ordered.includes(name));
+    return ['All', ...ordered, ...extra];
+  }, [projects, categoryRows]);
+
+  // If the chosen category disappears (for example it was removed), go back to All.
+  const filter = categories.includes(chosen) ? chosen : 'All';
 
   const filtered = useMemo(() => {
     if (filter === 'All') return projects;
@@ -32,7 +43,8 @@ export function WorkSection() {
         subtitle="Some of my UI/UX and web work. Click a project to read more."
       />
 
-      <div className="mb-10 flex flex-wrap items-center gap-2">
+      {/* One category (or none) means there is nothing to filter, so hide the buttons. */}
+      <div className={`mb-10 flex flex-wrap items-center gap-2 ${categories.length <= 2 ? 'hidden' : ''}`}>
         {categories.map((cat) => (
           <button
             key={cat}

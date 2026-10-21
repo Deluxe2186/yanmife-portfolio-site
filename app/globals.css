@@ -147,9 +147,9 @@ html {
 }
 
 /* ---------- Space background ----------
-   Pure CSS: no images, no JavaScript, no blur filters. Only transform and
-   opacity are animated, so the browser handles it on the graphics card and
-   it does not slow down loading or scrolling. */
+   Pure CSS: no images, no JavaScript, no blur filters. Only position, size,
+   rotation and opacity are animated, so the browser handles it on the
+   graphics card and it does not slow down loading or scrolling. */
 
 .space-bg {
   position: fixed;
@@ -166,48 +166,20 @@ html {
   to { opacity: var(--orb-strength, 1); }
 }
 
-/* A few small stars. Each tile repeats, so it stays one cheap image. */
-.space-stars {
-  position: absolute;
-  inset: 0;
-  display: none;
-  opacity: 0.55;
-  background-image:
-    radial-gradient(1px 1px at 38px 62px, #fff, transparent),
-    radial-gradient(1px 1px at 190px 24px, rgba(255, 255, 255, 0.8), transparent),
-    radial-gradient(1.5px 1.5px at 310px 140px, #fff, transparent),
-    radial-gradient(1px 1px at 120px 210px, rgba(255, 255, 255, 0.7), transparent),
-    radial-gradient(1px 1px at 390px 300px, rgba(255, 255, 255, 0.8), transparent),
-    radial-gradient(1px 1px at 240px 370px, #fff, transparent);
-  background-size: 420px 420px;
-}
-.dark .space-stars {
-  display: block;
-}
-.space-stars-b {
-  opacity: 0.5;
-  background-image:
-    radial-gradient(1.5px 1.5px at 70px 120px, hsl(280 100% 85%), transparent),
-    radial-gradient(1px 1px at 330px 60px, hsl(280 100% 90%), transparent),
-    radial-gradient(2px 2px at 220px 260px, hsl(280 100% 88%), transparent),
-    radial-gradient(1px 1px at 520px 400px, hsl(280 100% 90%), transparent);
-  background-size: 610px 610px;
-  animation: star-twinkle 7s ease-in-out infinite;
-}
-@keyframes star-twinkle {
-  0%, 100% { opacity: 0.25; }
-  50% { opacity: 0.7; }
-}
-
 /* Soft glowing shapes. Each one is two overlapping ellipses of colour that
    fade to nothing at the edges, so the shape looks organic and glowy
-   without any blur. They grow, shrink and drift like slow breathing.
-   Each gradient is sized to fade out fully inside its box, so no hard edge
-   shows. Sizes are capped so very large screens do not use extra memory. */
+   without any blur. Each gradient is sized to fade out fully inside its
+   box, so no hard edge shows. Sizes are capped so very large screens do not
+   use extra memory.
+
+   Every shape runs three separate animations with different lengths:
+   it wanders along a winding path, slowly turns, and breathes (grows,
+   shrinks and fades). The lengths (47s, 61s, 13s and so on) do not divide
+   evenly into each other, so the shapes almost never repeat the same
+   movement and it looks random. */
 .space-orb {
   position: absolute;
-  will-change: transform, opacity;
-  animation: orb-breathe-a 11s ease-in-out infinite;
+  will-change: translate, rotate, scale, opacity;
 }
 .space-orb-a {
   width: min(82vmax, 1500px);
@@ -217,45 +189,79 @@ html {
   background:
     radial-gradient(ellipse 56% 46% at 44% 42%, hsl(var(--primary) / 0.5), transparent 70%),
     radial-gradient(ellipse 44% 50% at 64% 56%, hsl(265 90% 68% / 0.32), transparent 70%);
+  animation:
+    orb-wander-a 47s ease-in-out infinite,
+    orb-turn-a 61s ease-in-out infinite,
+    orb-breathe 13s ease-in-out infinite;
 }
 .space-orb-b {
   width: min(78vmax, 1400px);
   height: min(64vmax, 1150px);
   right: -22vmax;
   bottom: -26vmax;
-  animation-name: orb-breathe-b;
-  animation-duration: 14s;
-  animation-delay: -5s;
   background:
     radial-gradient(ellipse 54% 46% at 58% 42%, hsl(265 90% 68% / 0.45), transparent 70%),
     radial-gradient(ellipse 42% 50% at 36% 62%, hsl(var(--primary) / 0.3), transparent 70%);
+  animation:
+    orb-wander-b 59s ease-in-out infinite,
+    orb-turn-b 53s ease-in-out infinite,
+    orb-breathe 17s ease-in-out -6s infinite;
 }
 .space-orb-c {
   width: min(58vmax, 1050px);
   height: min(48vmax, 860px);
   top: 34%;
   right: 4%;
-  animation-name: orb-breathe-c;
-  animation-duration: 9s;
-  animation-delay: -3s;
   background:
     radial-gradient(ellipse 56% 44% at 46% 44%, hsl(285 85% 68% / 0.3), transparent 70%),
     radial-gradient(ellipse 38% 48% at 62% 58%, hsl(var(--primary) / 0.22), transparent 70%);
+  animation:
+    orb-wander-c 37s ease-in-out -11s infinite,
+    orb-turn-c 71s ease-in-out infinite,
+    orb-breathe 9s ease-in-out -3s infinite;
 }
 
-/* The three shapes move out of step with each other: when one swells,
-   another shrinks. */
-@keyframes orb-breathe-a {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(0.8) rotate(0deg); opacity: 0.4; }
-  50% { transform: translate3d(7vmax, 5vmax, 0) scale(1.28) rotate(18deg); opacity: 1; }
+@keyframes orb-wander-a {
+  0%, 100% { translate: 0 0; }
+  14% { translate: 16vmax 7vmax; }
+  31% { translate: 5vmax 19vmax; }
+  47% { translate: -9vmax 11vmax; }
+  66% { translate: 12vmax -4vmax; }
+  83% { translate: -4vmax 6vmax; }
 }
-@keyframes orb-breathe-b {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1.2) rotate(0deg); opacity: 1; }
-  50% { transform: translate3d(-7vmax, -4vmax, 0) scale(0.78) rotate(-16deg); opacity: 0.4; }
+@keyframes orb-wander-b {
+  0%, 100% { translate: 0 0; }
+  12% { translate: -14vmax -6vmax; }
+  28% { translate: -4vmax -18vmax; }
+  49% { translate: 8vmax -9vmax; }
+  71% { translate: -11vmax 3vmax; }
+  88% { translate: 3vmax -5vmax; }
 }
-@keyframes orb-breathe-c {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(0.75) rotate(0deg); opacity: 0.35; }
-  50% { transform: translate3d(-5vmax, 6vmax, 0) scale(1.3) rotate(24deg); opacity: 1; }
+@keyframes orb-wander-c {
+  0%, 100% { translate: 0 0; }
+  18% { translate: -12vmax 9vmax; }
+  37% { translate: 6vmax 15vmax; }
+  58% { translate: -8vmax -7vmax; }
+  79% { translate: 10vmax 4vmax; }
+}
+@keyframes orb-turn-a {
+  0%, 100% { rotate: 0deg; }
+  30% { rotate: 24deg; }
+  65% { rotate: -18deg; }
+}
+@keyframes orb-turn-b {
+  0%, 100% { rotate: 0deg; }
+  35% { rotate: -22deg; }
+  70% { rotate: 16deg; }
+}
+@keyframes orb-turn-c {
+  0%, 100% { rotate: 0deg; }
+  25% { rotate: 28deg; }
+  60% { rotate: -24deg; }
+}
+@keyframes orb-breathe {
+  0%, 100% { scale: 0.8; opacity: 0.45; }
+  50% { scale: 1.26; opacity: 1; }
 }
 
 @media (max-width: 640px) {
@@ -269,13 +275,9 @@ html {
   50% { opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .space-orb,
+  .space-orb-a,
   .space-orb-b,
   .space-orb-c {
-    animation-name: orb-pulse;
-    animation-duration: 10s;
-  }
-  .space-stars-b {
-    animation: none;
+    animation: orb-pulse 10s ease-in-out infinite;
   }
 }

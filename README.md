@@ -59,6 +59,8 @@ Required variables:
 
 The file also adds a few sample rows so the site is not empty. Replace them from `/admin`.
 
+Then run any newer files in the same folder the same way, oldest first. For example `20261022090000_create_categories.sql` adds the Categories tab to the admin.
+
 ### 4. Set up Supabase Auth (for admin)
 
 1. Go to your Supabase dashboard → Authentication → Users
@@ -67,6 +69,16 @@ The file also adds a few sample rows so the site is not empty. Replace them from
 4. Use the credentials from step 2 to log in at `/admin`
 
 Step 3 matters. The database rules let any logged-in user edit content and read messages, so sign-ups must stay closed.
+
+### Admin sign-in and timeouts
+
+- The sign-in lasts only while the tab is open. Closing the tab or the browser signs you out.
+- After 15 minutes with no activity you get a warning, then you are signed out.
+- A sign-in can never last longer than 8 hours, even if you stay active.
+
+To change these, add to `.env` (and to Vercel): `NEXT_PUBLIC_ADMIN_IDLE_MINUTES=15` and `NEXT_PUBLIC_ADMIN_MAX_HOURS=8`.
+
+These timers run in the browser. They protect an unattended screen, but they cannot stop someone who already has your password. Use a long, unique password.
 
 ### 5. Run the dev server
 
