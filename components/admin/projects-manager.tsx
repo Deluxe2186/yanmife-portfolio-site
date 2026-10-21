@@ -18,6 +18,19 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 
+const MAX_COVER_MB = 8;
+
+/** Turns a storage error into something that says what to do next. */
+function explainUploadError(message: string): string {
+  if (/bucket not found/i.test(message)) {
+    return 'The project-images storage bucket is missing in Supabase. Run the SQL setup file from the README, then try again.';
+  }
+  if (/row-level security|unauthorized|jwt|not authenticated/i.test(message)) {
+    return 'Supabase refused the upload. Sign out, sign in again and retry.';
+  }
+  return `Upload failed: ${message}`;
+}
+
 const emptyProject: Omit<Project, 'id' | 'created_at'> = {
   title: '',
   slug: '',
@@ -55,17 +68,25 @@ export function ProjectsManager() {
     setLoading(false);
   };
 
-  const handleSave = async (project: Omit<Project, 'id' | 'created_at'> & { id?: string }) => {
+  /** Returns an error message to show in the form, or null when the save worked. */
+  const handleSave = async (
+    project: Omit<Project, 'id' | 'created_at'> & { id?: string }
+  ): Promise<string | null> => {
     setSaving(true);
-    if (project.id) {
-      await supabase.from('projects').update(project).eq('id', project.id);
-    } else {
-      await supabase.from('projects').insert(project);
-    }
+    const { id, created_at, ...fields } = project as any;
+    const { error } = id
+      ? await supabase.from('projects').update(fields).eq('id', id)
+      : await supabase.from('projects').insert(fields);
     setSaving(false);
+    if (error) {
+      return /duplicate|unique/i.test(error.message)
+        ? 'Another project already uses that slug. Change the slug or the title.'
+        : `Could not save: ${error.message}`;
+    }
     setEditing(null);
     setCreating(false);
     loadProjects(true);
+    return null;
   };
 
   const handleDelete = async (id: string) => {
@@ -93,20 +114,34 @@ export function ProjectsManager() {
     loadProjects(true);
   };
 
-  const handleUpload = async (file: File, project: any) => {
-    const ext = file.name.split('.').pop();
-    const fileName = `${project.slug || Date.now()}.${ext}`;
+  const handleUpload = async (
+    file: File,
+    project: any
+  ): Promise<{ url?: string; error?: string }> => {
+    if (!file.type.startsWith('image/')) {
+      return { error: 'Please choose an image file (JPG, PNG, WebP or GIF).' };
+    }
+    if (file.size > MAX_COVER_MB * 1024 * 1024) {
+      return { error: `That image is too big. Keep it under ${MAX_COVER_MB} MB.` };
+    }
+
+    const ext = (file.name.split('.').pop() ?? 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+    const base =
+      String(project.slug || project.title || 'project')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '') || 'project';
+    // A new file name every time, so a replaced cover never shows an old cached copy.
+    const path = `covers/${base}-${Date.now()}.${ext}`;
+
     const { error } = await supabase.storage
       .from('project-images')
-      .upload(fileName, file, { upsert: true });
-    if (error) {
-      alert(`Upload failed: ${error.message}`);
-      return;
-    }
-    const { data: urlData } = supabase.storage
-      .from('project-images')
-      .getPublicUrl(fileName);
-    return urlData.publicUrl;
+      .upload(path, file, { contentType: file.type, cacheControl: '31536000' });
+
+    if (error) return { error: explainUploadError(error.message) };
+
+    const { data } = supabase.storage.from('project-images').getPublicUrl(path);
+    return { url: data.publicUrl };
   };
 
   if (loading) {
@@ -205,31 +240,48 @@ function ProjectForm({
 }: {
   project: Omit<Project, 'id' | 'created_at'> & { id?: string };
   saving: boolean;
-  onSave: (p: any) => void;
+  onSave: (p: any) => Promise<string | null>;
   onCancel: () => void;
-  onUpload: (file: File, p: any) => Promise<string | undefined>;
+  onUpload: (file: File, p: any) => Promise<{ url?: string; error?: string }>;
   fileRef: React.RefObject<HTMLInputElement>;
 }) {
   const [form, setForm] = useState({ ...project });
   const [toolsText, setToolsText] = useState((project.tools ?? []).join(', '));
 
+  const [uploading, setUploading] = useState(false);
+  const [uploadNote, setUploadNote] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const update = (key: string, value: any) => setForm((f) => ({ ...f, [key]: value }));
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (uploading) return;
+    setSaveError(null);
     const slug = form.slug || form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    onSave({
+    const error = await onSave({
       ...form,
       slug,
       tools: toolsText.split(',').map((t) => t.trim()).filter(Boolean),
     });
+    if (error) setSaveError(error);
   };
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const input = e.target;
+    const file = input.files?.[0];
     if (!file) return;
-    const url = await onUpload(file, form);
-    if (url) update('cover_image_url', url);
+    setUploading(true);
+    setUploadNote(null);
+    const result = await onUpload(file, form);
+    setUploading(false);
+    input.value = ''; // lets you pick the same file again
+    if (result.error) {
+      setUploadNote({ type: 'error', text: result.error });
+    } else if (result.url) {
+      update('cover_image_url', result.url);
+      setUploadNote({ type: 'ok', text: 'Uploaded. Press Save to keep the new cover.' });
+    }
   };
 
   return (
@@ -293,14 +345,32 @@ function ProjectForm({
             <Label>Cover image</Label>
             <div className="mt-1.5 flex items-center gap-3">
               <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
-              <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
-                <Upload className="mr-1.5 h-4 w-4" />
-                Upload
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={uploading}
+                onClick={() => fileRef.current?.click()}
+              >
+                {uploading ? (
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                ) : (
+                  <Upload className="mr-1.5 h-4 w-4" />
+                )}
+                {uploading ? 'Uploading...' : form.cover_image_url ? 'Replace image' : 'Upload image'}
               </Button>
               {form.cover_image_url && (
-                <img src={form.cover_image_url} alt="cover" className="h-12 w-20 rounded-lg object-cover" />
+                <img src={form.cover_image_url} alt="Cover preview" className="h-16 w-28 rounded-lg border border-border object-cover" />
               )}
             </div>
+            {uploadNote && (
+              <p
+                role="status"
+                className={uploadNote.type === 'ok' ? 'mt-2 text-sm text-success' : 'mt-2 text-sm text-destructive'}
+              >
+                {uploadNote.text}
+              </p>
+            )}
             <Input
               value={form.cover_image_url ?? ''}
               onChange={(e) => update('cover_image_url', e.target.value)}
@@ -332,9 +402,13 @@ function ProjectForm({
           </div>
         </div>
 
+        {saveError && (
+          <p role="alert" className="mt-4 text-sm text-destructive">{saveError}</p>
+        )}
+
         <div className="mt-6 flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-          <Button type="submit" disabled={saving}>
+          <Button type="submit" disabled={saving || uploading}>
             {saving && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
             Save
           </Button>
