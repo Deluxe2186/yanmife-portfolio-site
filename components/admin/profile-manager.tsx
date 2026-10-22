@@ -10,8 +10,10 @@ import {
 } from '@/lib/profile-photo';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CropDialog } from '@/components/admin/crop-dialog';
+import { PROFILE_SIZE } from '@/lib/image-sizes';
 
-const MAX_SIZE_MB = 5;
+const MAX_SIZE_MB = 25; // the photo you pick before cropping
 const EXTENSIONS: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -25,6 +27,7 @@ export function ProfileManager() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -39,12 +42,13 @@ export function ProfileManager() {
     })();
   }, []);
 
-  const handleFile = async (file: File | undefined) => {
+  /** Checks the picked photo, then opens the cropper. */
+  const handleFile = (file: File | undefined) => {
+    if (fileRef.current) fileRef.current.value = ''; // lets you pick the same file again
     if (!file) return;
     setMessage(null);
 
-    const ext = EXTENSIONS[file.type];
-    if (!ext) {
+    if (!EXTENSIONS[file.type]) {
       setMessage({ type: 'error', text: 'Please choose a JPG, PNG or WebP image.' });
       return;
     }
@@ -52,13 +56,18 @@ export function ProfileManager() {
       setMessage({ type: 'error', text: `That image is too big. Keep it under ${MAX_SIZE_MB} MB.` });
       return;
     }
+    setCropFile(file);
+  };
 
+  /** Uploads the cropped square photo. */
+  const uploadCropped = async (blob: Blob) => {
+    setCropFile(null);
     setBusy(true);
     // A new file name each time, so visitors never see a cached old photo.
-    const path = `${PROFILE_FOLDER}/photo-${Date.now()}.${ext}`;
+    const path = `${PROFILE_FOLDER}/photo-${Date.now()}.jpg`;
     const { error } = await supabase.storage
       .from(PROFILE_BUCKET)
-      .upload(path, file, { cacheControl: '31536000', contentType: file.type });
+      .upload(path, blob, { cacheControl: '31536000', contentType: 'image/jpeg' });
 
     if (error) {
       setBusy(false);
@@ -79,7 +88,6 @@ export function ProfileManager() {
       setMessage({ type: 'error', text: `Uploaded, but could not refresh: ${err.message}` });
     }
     setBusy(false);
-    if (fileRef.current) fileRef.current.value = '';
   };
 
   const handleRemove = async () => {
@@ -107,7 +115,7 @@ export function ProfileManager() {
       <div className="mb-4">
         <h2 className="text-lg font-semibold">Profile photo</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Shown in the About section. A square image works best (JPG, PNG or WebP, up to {MAX_SIZE_MB} MB).
+          Shown in the About section. After you pick a photo, drag it to choose the part to show and zoom to resize it. It is saved as a {PROFILE_SIZE} × {PROFILE_SIZE} px square.
         </p>
       </div>
 
@@ -155,6 +163,20 @@ export function ProfileManager() {
           )}
         </div>
       </div>
+
+      {cropFile && (
+        <CropDialog
+          file={cropFile}
+          variant="frame"
+          aspect={1}
+          outputWidth={PROFILE_SIZE}
+          outputHeight={PROFILE_SIZE}
+          title="Position your photo"
+          help="Drag the photo to choose the part inside the frame. Use the + and - buttons, the slider or the mouse wheel to resize it."
+          onCancel={() => setCropFile(null)}
+          onDone={uploadCropped}
+        />
+      )}
     </div>
   );
 }

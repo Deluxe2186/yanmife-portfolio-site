@@ -70,6 +70,13 @@ Then run any newer files in the same folder the same way, oldest first. For exam
 
 Step 3 matters. The database rules let any logged-in user edit content and read messages, so sign-ups must stay closed.
 
+### Images
+
+- **Project thumbnails** are always saved at 2000 × 1500 px (4:3). After you pick a photo in the admin, a cropper opens. Drag the corners of the box to choose the part to show, drag inside the box to move it, and use the + and - buttons (or the slider or mouse wheel) to zoom.
+- **The profile photo** is saved as a 1200 × 1200 px square. Drag the photo behind the frame to choose the part to show, and zoom to resize it.
+- Use photos at least 2000 px wide for thumbnails. Smaller ones are enlarged and can look soft, and the cropper warns you.
+- Thumbnails you uploaded before this change keep their old shape. They are trimmed to 4:3 on the site until you upload them again.
+
 ### Admin sign-in and timeouts
 
 - The sign-in lasts only while the tab is open. Closing the tab or the browser signs you out.
