@@ -5,6 +5,8 @@ import { Plus, Pencil, Trash2, X, ArrowUp, ArrowDown, Loader2, Upload } from 'lu
 import { supabase } from '@/lib/supabase/client';
 import type { Project } from '@/lib/types';
 import { useCategories } from '@/hooks/use-data';
+import { CropDialog } from '@/components/admin/crop-dialog';
+import { COVER_ASPECT, COVER_HEIGHT, COVER_WIDTH } from '@/lib/image-sizes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,7 +21,8 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 
-const MAX_COVER_MB = 8;
+const MAX_COVER_MB = 8; // the finished 2000 x 1500 picture is far smaller than this
+const MAX_SOURCE_MB = 25; // the photo you pick before cropping
 
 /** Turns a storage error into something that says what to do next. */
 function explainUploadError(message: string): string {
@@ -202,10 +205,10 @@ export function ProjectsManager() {
                 <img
                   src={project.cover_image_url}
                   alt={project.title}
-                  className="h-16 w-24 rounded-lg object-cover"
+                  className="aspect-[4/3] w-24 rounded-lg object-cover"
                 />
               ) : (
-                <div className="flex h-16 w-24 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
+                <div className="flex aspect-[4/3] w-24 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
                   No image
                 </div>
               )}
@@ -280,6 +283,7 @@ function ProjectForm({
   const [uploading, setUploading] = useState(false);
   const [uploadNote, setUploadNote] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const [addingCategory, setAddingCategory] = useState(false);
   const [newCategory, setNewCategory] = useState('');
   const [categoryError, setCategoryError] = useState<string | null>(null);
@@ -318,15 +322,30 @@ function ProjectForm({
     if (error) setSaveError(error);
   };
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target;
     const file = input.files?.[0];
+    input.value = ''; // lets you pick the same file again
     if (!file) return;
+    setUploadNote(null);
+    if (!file.type.startsWith('image/')) {
+      setUploadNote({ type: 'error', text: 'Please choose an image file (JPG, PNG, WebP or GIF).' });
+      return;
+    }
+    if (file.size > MAX_SOURCE_MB * 1024 * 1024) {
+      setUploadNote({ type: 'error', text: `That image is too big. Keep it under ${MAX_SOURCE_MB} MB.` });
+      return;
+    }
+    setCropFile(file);
+  };
+
+  /** Uploads the cropped 2000 x 1500 picture. */
+  const uploadCropped = async (blob: Blob) => {
+    setCropFile(null);
     setUploading(true);
     setUploadNote(null);
-    const result = await onUpload(file, form);
+    const result = await onUpload(new File([blob], 'cover.jpg', { type: 'image/jpeg' }), form);
     setUploading(false);
-    input.value = ''; // lets you pick the same file again
     if (result.error) {
       setUploadNote({ type: 'error', text: result.error });
     } else if (result.url) {
@@ -455,9 +474,12 @@ function ProjectForm({
                 {uploading ? 'Uploading...' : form.cover_image_url ? 'Replace image' : 'Upload image'}
               </Button>
               {form.cover_image_url && (
-                <img src={form.cover_image_url} alt="Cover preview" className="h-16 w-28 rounded-lg border border-border object-cover" />
+                <img src={form.cover_image_url} alt="Cover preview" className="aspect-[4/3] w-28 rounded-lg border border-border object-cover" />
               )}
             </div>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              After you pick a photo, you choose the part to show. It is saved at {COVER_WIDTH} × {COVER_HEIGHT} px.
+            </p>
             {uploadNote && (
               <p
                 role="status"
@@ -496,6 +518,20 @@ function ProjectForm({
             </div>
           </div>
         </div>
+
+        {cropFile && (
+          <CropDialog
+            file={cropFile}
+            variant="box"
+            aspect={COVER_ASPECT}
+            outputWidth={COVER_WIDTH}
+            outputHeight={COVER_HEIGHT}
+            title="Crop the thumbnail"
+            help="Drag the corners of the box to choose the part to show. Drag inside the box to move it. Use the + and - buttons to zoom."
+            onCancel={() => setCropFile(null)}
+            onDone={uploadCropped}
+          />
+        )}
 
         {saveError && (
           <p role="alert" className="mt-4 text-sm text-destructive">{saveError}</p>
