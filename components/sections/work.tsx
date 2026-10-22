@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight, MousePointerClick, X, ExternalLink, Figma } from 'lucide-react';
 import { useProjects, useCategories } from '@/hooks/use-data';
 import type { Project } from '@/lib/types';
+import { COVER_WIDTH, COVER_HEIGHT } from '@/lib/image-sizes';
 import { SectionReveal } from '@/components/section-reveal';
 import { SectionHeading } from '@/components/section-heading';
 import { ProjectSkeleton } from '@/components/project-skeleton';
@@ -140,11 +141,13 @@ function ProjectCard({
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
     >
-      <div className="relative aspect-[16/10] overflow-hidden">
+      <div className="relative aspect-[4/3] overflow-hidden">
         {project.cover_image_url && (
           <motion.img
             src={project.cover_image_url}
             alt={project.title}
+            width={COVER_WIDTH}
+            height={COVER_HEIGHT}
             className="h-full w-full object-cover"
             animate={reduceMotion ? undefined : { scale: hovered ? 1.05 : 1 }}
             transition={{ duration: 0.4 }}
@@ -217,10 +220,12 @@ function ProjectModal({
         </button>
 
         {project.cover_image_url && (
-          <div className="relative aspect-[16/9] overflow-hidden">
+          <div className="relative aspect-[4/3] overflow-hidden">
             <img
               src={project.cover_image_url}
               alt={project.title}
+              width={COVER_WIDTH}
+              height={COVER_HEIGHT}
               className="h-full w-full object-cover"
             />
           </div>

@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export function ProjectSkeleton() {
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card">
-      <Skeleton className="aspect-[16/10] w-full rounded-none" />
+      <Skeleton className="aspect-[4/3] w-full rounded-none" />
       <div className="p-5">
         <Skeleton className="h-5 w-2/3" />
         <Skeleton className="mt-3 h-4 w-full" />
