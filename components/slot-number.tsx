@@ -14,18 +14,20 @@ interface ReelProps {
 }
 
 /**
- * One column of digits that spins like a slot machine reel.
- * It speeds up, spins blurred, slows down, rolls a little past the number
- * and settles back onto `digit`.
+ * One column of digits that rolls like a slot machine reel.
+ * It starts at a pace the eye can follow, then slows down smoothly
+ * (an ease-out) and comes to rest on `digit`.
  */
 function Reel({ digit, turns, delay, run, instant }: ReelProps) {
   const landIndex = turns * 10 + digit;
-  // One extra digit sits after the target, so the small overshoot has something to show.
-  const count = landIndex + 2;
+  const count = landIndex + 1;
   const digits = Array.from({ length: count }, (_, i) => i % 10);
-  // Positions are a percent of the strip's own height.
-  const at = (index: number) => `${-(index / count) * 100}%`;
-  const duration = 1.7 + turns * 0.35;
+  // Position is a percent of the strip's own height.
+  const landAt = `${-(landIndex / count) * 100}%`;
+  // Roughly 3 digits per second on average, never shorter than 3.2 seconds
+  // and never longer than 5. The ease-out makes the start a little faster
+  // and the end very slow, so the last few digits are easy to read.
+  const duration = Math.min(5, Math.max(3.2, landIndex / 3.2));
 
   return (
     <span
@@ -34,34 +36,12 @@ function Reel({ digit, turns, delay, run, instant }: ReelProps) {
     >
       <motion.span
         className="flex flex-col"
-        initial={{ y: '0%', filter: 'blur(0px)' }}
-        animate={
-          !run
-            ? { y: '0%', filter: 'blur(0px)' }
-            : instant
-              ? { y: at(landIndex), filter: 'blur(0px)' }
-              : {
-                  y: ['0%', at(landIndex + 0.25), at(landIndex)],
-                  filter: ['blur(0px)', 'blur(1.5px)', 'blur(1.5px)', 'blur(0px)'],
-                }
-        }
+        initial={{ y: '0%' }}
+        animate={{ y: run ? landAt : '0%' }}
         transition={
           instant
             ? { duration: 0 }
-            : {
-                y: {
-                  duration,
-                  delay,
-                  times: [0, 0.86, 1],
-                  ease: [[0.3, 0.05, 0.2, 1], 'easeOut'],
-                },
-                filter: {
-                  duration,
-                  delay,
-                  times: [0, 0.1, 0.7, 0.9],
-                  ease: 'linear',
-                },
-              }
+            : { duration, delay, ease: [0.25, 0.6, 0.3, 1] }
         }
       >
         {digits.map((n, i) => (
@@ -76,7 +56,7 @@ function Reel({ digit, turns, delay, run, instant }: ReelProps) {
 
 /**
  * Shows a number as slot machine reels. When it scrolls into view the
- * reels spin and stop one by one, left to right, on the real value.
+ * reels roll slowly and come to rest one by one, left to right, on the real value.
  */
 export function SlotNumber({ value, suffix = '' }: { value: number; suffix?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -94,8 +74,8 @@ export function SlotNumber({ value, suffix = '' }: { value: number; suffix?: str
         <Reel
           key={i}
           digit={digit}
-          turns={2 + i}
-          delay={i * 0.12}
+          turns={1}
+          delay={0.2 + i * 0.5}
           run={inView}
           instant={reduceMotion}
         />
