@@ -17,6 +17,50 @@ const GLYPH = 'absolute inset-0 block text-center leading-[1.1em] tabular-nums w
  *
  * The animation writes straight to the page every frame instead of going
  * through React, which keeps it smooth.
+/**
+ * One column of digits that rolls like a slot machine reel.
+ * It starts at a pace the eye can follow, then slows down smoothly
+ * (an ease-out) and comes to rest on `digit`.
+ */
+function Reel({ digit, turns, delay, run, instant }: ReelProps) {
+  const landIndex = turns * 10 + digit;
+  const count = landIndex + 1;
+  const digits = Array.from({ length: count }, (_, i) => i % 10);
+  // Position is a percent of the strip's own height.
+  const landAt = `${-(landIndex / count) * 100}%`;
+  // Roughly 3 digits per second on average, never shorter than 3.2 seconds
+  // and never longer than 5. The ease-out makes the start a little faster
+  // and the end very slow, so the last few digits are easy to read.
+  const duration = Math.min(5, Math.max(3.2, landIndex / 3.2));
+
+  return (
+    <span
+      aria-hidden="true"
+      className="relative inline-block h-[1.1em] overflow-hidden align-top leading-[1.1em]"
+    >
+      <motion.span
+        className="flex flex-col"
+        initial={{ y: '0%' }}
+        animate={{ y: run ? landAt : '0%' }}
+        transition={
+          instant
+            ? { duration: 0 }
+            : { duration, delay, ease: [0.25, 0.6, 0.3, 1] }
+        }
+      >
+        {digits.map((n, i) => (
+          <span key={i} className="block h-[1.1em] leading-[1.1em] tabular-nums">
+            {n}
+          </span>
+        ))}
+      </motion.span>
+    </span>
+  );
+}
+
+/**
+ * Shows a number as slot machine reels. When it scrolls into view the
+ * reels roll slowly and come to rest one by one, left to right, on the real value.
  */
 export function SlotNumber({ value, suffix = '' }: { value: number; suffix?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -97,6 +141,12 @@ export function SlotNumber({ value, suffix = '' }: { value: number; suffix?: str
           </span>
           <span ref={setNode(i, 'b')} className={`${GLYPH} hidden`} />
         </span>
+          digit={digit}
+          turns={1}
+          delay={0.2 + i * 0.5}
+          run={inView}
+          instant={reduceMotion}
+        />
       ))}
       {suffix && (
         <span aria-hidden="true" className="leading-[1.1em]">
