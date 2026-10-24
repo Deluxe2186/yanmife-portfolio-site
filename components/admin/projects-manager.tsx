@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { Plus, Pencil, Trash2, X, ArrowUp, ArrowDown, Loader2, Upload } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Plus, Pencil, Trash2, X, ArrowUp, ArrowDown, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import type { Project } from '@/lib/types';
 import { useCategories } from '@/hooks/use-data';
-import { CropDialog } from '@/components/admin/crop-dialog';
-import { COVER_ASPECT, COVER_HEIGHT, COVER_WIDTH } from '@/lib/image-sizes';
+import { ProjectImagesEditor } from '@/components/admin/project-images-editor';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,20 +20,6 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 
-const MAX_COVER_MB = 8; // the finished 2000 x 1500 picture is far smaller than this
-const MAX_SOURCE_MB = 25; // the photo you pick before cropping
-
-/** Turns a storage error into something that says what to do next. */
-function explainUploadError(message: string): string {
-  if (/bucket not found/i.test(message)) {
-    return 'The project-images storage bucket is missing in Supabase. Run the SQL setup file from the README, then try again.';
-  }
-  if (/row-level security|unauthorized|jwt|not authenticated/i.test(message)) {
-    return 'Supabase refused the upload. Sign out, sign in again and retry.';
-  }
-  return `Upload failed: ${message}`;
-}
-
 const emptyProject: Omit<Project, 'id' | 'created_at'> = {
   title: '',
   slug: '',
@@ -42,6 +27,8 @@ const emptyProject: Omit<Project, 'id' | 'created_at'> = {
   overview: '',
   description: '',
   cover_image_url: '',
+  images: [],
+  thumbnail_image_id: null,
   tools: [],
   role: '',
   live_url: '',
@@ -56,7 +43,7 @@ export function ProjectsManager() {
   const [editing, setEditing] = useState<Project | null>(null);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [imagesMissing, setImagesMissing] = useState(false);
   const { categories: categoryRows, tableMissing, reload: reloadCategories } = useCategories();
 
   useEffect(() => {
@@ -70,6 +57,8 @@ export function ProjectsManager() {
       .select('*')
       .order('sort_order', { ascending: true });
     setProjects(data ?? []);
+    // Old databases return projects without an images column.
+    if (data && data.length > 0) setImagesMissing(!('images' in data[0]));
     setLoading(false);
   };
 
@@ -79,11 +68,19 @@ export function ProjectsManager() {
   ): Promise<string | null> => {
     setSaving(true);
     const { id, created_at, ...fields } = project as any;
+    if (imagesMissing) {
+      delete fields.images;
+      delete fields.thumbnail_image_id;
+    }
     const { error } = id
       ? await supabase.from('projects').update(fields).eq('id', id)
       : await supabase.from('projects').insert(fields);
     setSaving(false);
     if (error) {
+      if (/images|thumbnail_image_id/i.test(error.message) && /column|schema cache/i.test(error.message)) {
+        setImagesMissing(true);
+        return 'Your database needs one more setup step before it can save several images. The steps are shown under Project images. Run the SQL there, reload this page and try again.';
+      }
       return /duplicate|unique/i.test(error.message)
         ? 'Another project already uses that slug. Change the slug or the title.'
         : `Could not save: ${error.message}`;
@@ -138,36 +135,6 @@ export function ProjectsManager() {
     if (error) return `Could not add the category: ${error.message}`;
     await reloadCategories();
     return null;
-  };
-
-  const handleUpload = async (
-    file: File,
-    project: any
-  ): Promise<{ url?: string; error?: string }> => {
-    if (!file.type.startsWith('image/')) {
-      return { error: 'Please choose an image file (JPG, PNG, WebP or GIF).' };
-    }
-    if (file.size > MAX_COVER_MB * 1024 * 1024) {
-      return { error: `That image is too big. Keep it under ${MAX_COVER_MB} MB.` };
-    }
-
-    const ext = (file.name.split('.').pop() ?? 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
-    const base =
-      String(project.slug || project.title || 'project')
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '') || 'project';
-    // A new file name every time, so a replaced cover never shows an old cached copy.
-    const path = `covers/${base}-${Date.now()}.${ext}`;
-
-    const { error } = await supabase.storage
-      .from('project-images')
-      .upload(path, file, { contentType: file.type, cacheControl: '31536000' });
-
-    if (error) return { error: explainUploadError(error.message) };
-
-    const { data } = supabase.storage.from('project-images').getPublicUrl(path);
-    return { url: data.publicUrl };
   };
 
   if (loading) {
@@ -248,8 +215,7 @@ export function ProjectsManager() {
           saving={saving}
           onSave={handleSave}
           onCancel={() => { setEditing(null); setCreating(false); }}
-          onUpload={handleUpload}
-          fileRef={fileRef}
+          imagesColumnMissing={imagesMissing}
           categoryOptions={categoryOptions}
           onCreateCategory={handleCreateCategory}
         />
@@ -263,8 +229,7 @@ function ProjectForm({
   saving,
   onSave,
   onCancel,
-  onUpload,
-  fileRef,
+  imagesColumnMissing,
   categoryOptions,
   onCreateCategory,
 }: {
@@ -272,18 +237,14 @@ function ProjectForm({
   saving: boolean;
   onSave: (p: any) => Promise<string | null>;
   onCancel: () => void;
-  onUpload: (file: File, p: any) => Promise<{ url?: string; error?: string }>;
-  fileRef: React.RefObject<HTMLInputElement>;
+  imagesColumnMissing: boolean;
   categoryOptions: string[];
   onCreateCategory: (name: string) => Promise<string | null>;
 }) {
   const [form, setForm] = useState({ ...project });
   const [toolsText, setToolsText] = useState((project.tools ?? []).join(', '));
 
-  const [uploading, setUploading] = useState(false);
-  const [uploadNote, setUploadNote] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [cropFile, setCropFile] = useState<File | null>(null);
   const [addingCategory, setAddingCategory] = useState(false);
   const [newCategory, setNewCategory] = useState('');
   const [categoryError, setCategoryError] = useState<string | null>(null);
@@ -311,7 +272,6 @@ function ProjectForm({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (uploading) return;
     setSaveError(null);
     const slug = form.slug || form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     const error = await onSave({
@@ -320,38 +280,6 @@ function ProjectForm({
       tools: toolsText.split(',').map((t) => t.trim()).filter(Boolean),
     });
     if (error) setSaveError(error);
-  };
-
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.target;
-    const file = input.files?.[0];
-    input.value = ''; // lets you pick the same file again
-    if (!file) return;
-    setUploadNote(null);
-    if (!file.type.startsWith('image/')) {
-      setUploadNote({ type: 'error', text: 'Please choose an image file (JPG, PNG, WebP or GIF).' });
-      return;
-    }
-    if (file.size > MAX_SOURCE_MB * 1024 * 1024) {
-      setUploadNote({ type: 'error', text: `That image is too big. Keep it under ${MAX_SOURCE_MB} MB.` });
-      return;
-    }
-    setCropFile(file);
-  };
-
-  /** Uploads the cropped 2000 x 1500 picture. */
-  const uploadCropped = async (blob: Blob) => {
-    setCropFile(null);
-    setUploading(true);
-    setUploadNote(null);
-    const result = await onUpload(new File([blob], 'cover.jpg', { type: 'image/jpeg' }), form);
-    setUploading(false);
-    if (result.error) {
-      setUploadNote({ type: 'error', text: result.error });
-    } else if (result.url) {
-      update('cover_image_url', result.url);
-      setUploadNote({ type: 'ok', text: 'Uploaded. Press Save to keep the new cover.' });
-    }
   };
 
   return (
@@ -455,44 +383,25 @@ function ProjectForm({
             <Input value={toolsText} onChange={(e) => setToolsText(e.target.value)} placeholder="Figma, React, Tailwind" className="mt-1.5" />
           </div>
 
+          <ProjectImagesEditor
+            images={form.images ?? []}
+            onImagesChange={(update) => setForm((f) => ({ ...f, images: update(f.images ?? []) }))}
+            coverUrl={form.cover_image_url || null}
+            thumbnailId={form.thumbnail_image_id ?? null}
+            onThumbnailChange={(imageId, coverUrl) =>
+              setForm((f) => ({ ...f, thumbnail_image_id: imageId, cover_image_url: coverUrl ?? '' }))
+            }
+            baseName={form.slug || form.title || 'project'}
+            columnMissing={imagesColumnMissing}
+          />
+
           <div>
-            <Label>Cover image</Label>
-            <div className="mt-1.5 flex items-center gap-3">
-              <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={uploading}
-                onClick={() => fileRef.current?.click()}
-              >
-                {uploading ? (
-                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-                ) : (
-                  <Upload className="mr-1.5 h-4 w-4" />
-                )}
-                {uploading ? 'Uploading...' : form.cover_image_url ? 'Replace image' : 'Upload image'}
-              </Button>
-              {form.cover_image_url && (
-                <img src={form.cover_image_url} alt="Cover preview" className="aspect-[4/3] w-28 rounded-lg border border-border object-cover" />
-              )}
-            </div>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              After you pick a photo, you choose the part to show. It is saved at {COVER_WIDTH} × {COVER_HEIGHT} px.
-            </p>
-            {uploadNote && (
-              <p
-                role="status"
-                className={uploadNote.type === 'ok' ? 'mt-2 text-sm text-success' : 'mt-2 text-sm text-destructive'}
-              >
-                {uploadNote.text}
-              </p>
-            )}
+            <Label>Thumbnail link (optional)</Label>
             <Input
               value={form.cover_image_url ?? ''}
-              onChange={(e) => update('cover_image_url', e.target.value)}
-              placeholder="or paste image URL"
-              className="mt-2"
+              onChange={(e) => setForm((f) => ({ ...f, cover_image_url: e.target.value, thumbnail_image_id: null }))}
+              placeholder="Or paste a link to an image"
+              className="mt-1.5"
             />
           </div>
 
@@ -519,27 +428,13 @@ function ProjectForm({
           </div>
         </div>
 
-        {cropFile && (
-          <CropDialog
-            file={cropFile}
-            variant="box"
-            aspect={COVER_ASPECT}
-            outputWidth={COVER_WIDTH}
-            outputHeight={COVER_HEIGHT}
-            title="Crop the thumbnail"
-            help="Drag the corners of the box to choose the part to show. Drag inside the box to move it. Use the + and - buttons to zoom."
-            onCancel={() => setCropFile(null)}
-            onDone={uploadCropped}
-          />
-        )}
-
         {saveError && (
           <p role="alert" className="mt-4 text-sm text-destructive">{saveError}</p>
         )}
 
         <div className="mt-6 flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-          <Button type="submit" disabled={saving || uploading}>
+          <Button type="submit" disabled={saving}>
             {saving && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
             Save
           </Button>
