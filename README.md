@@ -73,6 +73,8 @@ Step 3 matters. The database rules let any logged-in user edit content and read 
 ### Images
 
 - **Project thumbnails** are always saved at 2000 × 1500 px (4:3). After you pick a photo in the admin, a cropper opens. Drag the corners of the box to choose the part to show, drag inside the box to move it, and use the + and - buttons (or the slider or mouse wheel) to zoom.
+- **Several images per project.** In the admin, open a project and use **Add images** under Project images. Give each image a title (it shows under the picture), reorder them with the arrows, and press **Use as thumbnail** on the one you want for the project card. The project page shows the images from top to bottom. Pictures wider than 2400 px are shrunk when you add them so the page stays fast. This needs the SQL file `20261023090000_add_project_images.sql` (the admin shows the SQL if it is missing).
+- **Direct links.** `/#project-<slug>` opens a project straight away, and **Copy link** on the project page copies that address.
 - **The profile photo** is saved as a 1200 × 1200 px square. Drag the photo behind the frame to choose the part to show, and zoom to resize it.
 - Use photos at least 2000 px wide for thumbnails. Smaller ones are enlarged and can look soft, and the cropper warns you.
 - Thumbnails you uploaded before this change keep their old shape. They are trimmed to 4:3 on the site until you upload them again.
