@@ -1,16 +1,16 @@
 'use client';
 
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback, forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowUpRight, MousePointerClick, X, ExternalLink, Figma } from 'lucide-react';
+import { ArrowUpRight, MousePointerClick } from 'lucide-react';
 import { useProjects, useCategories } from '@/hooks/use-data';
 import type { Project } from '@/lib/types';
 import { COVER_WIDTH, COVER_HEIGHT } from '@/lib/image-sizes';
 import { SectionReveal } from '@/components/section-reveal';
 import { SectionHeading } from '@/components/section-heading';
 import { ProjectSkeleton } from '@/components/project-skeleton';
-import { Button } from '@/components/ui/button';
+import { ProjectDetail } from '@/components/project-detail';
 
 export function WorkSection() {
   const { projects, loading, error } = useProjects();
@@ -18,6 +18,26 @@ export function WorkSection() {
   const [chosen, setFilter] = useState('All');
   const [selected, setSelected] = useState<Project | null>(null);
   const reduceMotion = useReducedMotion();
+  const openedFromLink = useRef(false);
+
+  const openProject = useCallback((project: Project) => {
+    setSelected(project);
+    window.history.replaceState(null, '', `#project-${encodeURIComponent(project.slug)}`);
+  }, []);
+  const closeProject = useCallback(() => {
+    setSelected(null);
+    window.history.replaceState(null, '', '#work');
+  }, []);
+
+  // A link like /#project-my-project opens that project when the page loads.
+  useEffect(() => {
+    if (openedFromLink.current || projects.length === 0) return;
+    openedFromLink.current = true;
+    const match = window.location.hash.match(/^#project-(.+)$/);
+    if (!match) return;
+    const found = projects.find((p) => p.slug === decodeURIComponent(match[1]));
+    if (found) setSelected(found);
+  }, [projects]);
 
   // Filter buttons come from your categories, in your order. A category with
   // no projects is left out, so nobody clicks into an empty list.
@@ -97,7 +117,7 @@ export function WorkSection() {
               <ProjectCard
                 key={project.id}
                 project={project}
-                onClick={() => setSelected(project)}
+                onClick={() => openProject(project)}
                 reduceMotion={reduceMotion}
               />
             ))}
@@ -107,26 +127,27 @@ export function WorkSection() {
 
       <AnimatePresence>
         {selected && (
-          <ProjectModal project={selected} onClose={() => setSelected(null)} />
+          <ProjectDetail project={selected} onClose={closeProject} />
         )}
       </AnimatePresence>
     </SectionReveal>
   );
 }
 
-function ProjectCard({
-  project,
-  onClick,
-  reduceMotion,
-}: {
-  project: Project;
-  onClick: () => void;
-  reduceMotion: boolean | null;
-}) {
+// It passes its ref on to the card, which the filter animation needs to measure it.
+const ProjectCard = forwardRef<
+  HTMLDivElement,
+  {
+    project: Project;
+    onClick: () => void;
+    reduceMotion: boolean | null;
+  }
+>(function ProjectCard({ project, onClick, reduceMotion }, ref) {
   const [hovered, setHovered] = useState(false);
 
   return (
     <motion.div
+      ref={ref}
       layout
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -186,121 +207,4 @@ function ProjectCard({
       </div>
     </motion.div>
   );
-}
-
-function ProjectModal({
-  project,
-  onClose,
-}: {
-  project: Project;
-  onClose: () => void;
-}) {
-  return (
-    <motion.div
-      className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-black/50 p-4 backdrop-blur-sm"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-    >
-      <motion.div
-        className="relative my-8 w-full max-w-3xl overflow-hidden rounded-2xl border border-primary/20 bg-card shadow-xl glow-lg"
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/80 text-foreground backdrop-blur transition-colors hover:bg-background"
-          aria-label="Close"
-        >
-          <X className="h-4 w-4" />
-        </button>
-
-        {project.cover_image_url && (
-          <div className="relative aspect-[4/3] overflow-hidden">
-            <img
-              src={project.cover_image_url}
-              alt={project.title}
-              width={COVER_WIDTH}
-              height={COVER_HEIGHT}
-              className="h-full w-full object-cover"
-            />
-          </div>
-        )}
-
-        <div className="max-h-[50vh] overflow-y-auto p-6 sm:p-8">
-          <div className="mb-2 flex items-center gap-2">
-            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              {project.category}
-            </span>
-            {project.featured && (
-              <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success">
-                Featured
-              </span>
-            )}
-          </div>
-          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            {project.title}
-          </h2>
-          <p className="mt-3 text-muted-foreground">{project.overview}</p>
-
-          {project.description && (
-            <p className="mt-4 text-sm leading-relaxed text-foreground/80">
-              {project.description}
-            </p>
-          )}
-
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            {project.role && (
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  My Role
-                </p>
-                <p className="mt-1 text-sm font-medium">{project.role}</p>
-              </div>
-            )}
-            {project.tools.length > 0 && (
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Tools Used
-                </p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {project.tools.map((tool) => (
-                    <span
-                      key={tool}
-                      className="rounded-lg bg-muted px-2.5 py-1 text-xs font-medium"
-                    >
-                      {tool}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-8 flex flex-wrap gap-3">
-            {project.live_url && (
-              <Button asChild>
-                <a href={project.live_url} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  View live
-                </a>
-              </Button>
-            )}
-            {project.figma_url && (
-              <Button variant="outline" asChild>
-                <a href={project.figma_url} target="_blank" rel="noopener noreferrer">
-                  <Figma className="mr-2 h-4 w-4" />
-                  View in Figma
-                </a>
-              </Button>
-            )}
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
+});
