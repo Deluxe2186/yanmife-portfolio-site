@@ -1,3 +1,10 @@
+export interface ProjectImage {
+  id: string;
+  url: string;
+  /** Shown under the image on the project page. */
+  title: string;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -6,6 +13,10 @@ export interface Project {
   overview: string;
   description: string | null;
   cover_image_url: string | null;
+  /** Every picture for the project page, in order. */
+  images?: ProjectImage[] | null;
+  /** Which image in `images` the thumbnail was made from. */
+  thumbnail_image_id?: string | null;
   tools: string[];
   role: string | null;
   live_url: string | null;
