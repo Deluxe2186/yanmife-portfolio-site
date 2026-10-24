@@ -3,32 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Copy, Mail } from 'lucide-react';
-
-/** Copies text. Uses the modern clipboard API and falls back to an older method. */
-async function copyText(text: string): Promise<boolean> {
-  try {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    }
-  } catch {
-    // fall through to the older method
-  }
-  try {
-    const box = document.createElement('textarea');
-    box.value = text;
-    box.setAttribute('readonly', '');
-    box.style.position = 'fixed';
-    box.style.opacity = '0';
-    document.body.appendChild(box);
-    box.select();
-    const ok = document.execCommand('copy');
-    document.body.removeChild(box);
-    return ok;
-  } catch {
-    return false;
-  }
-}
+import { copyText } from '@/lib/clipboard';
 
 /** An email card. Clicking it copies the address and shows a short confirmation. */
 export function CopyEmail({ email }: { email: string }) {
