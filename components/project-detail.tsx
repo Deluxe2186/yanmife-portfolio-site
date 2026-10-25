@@ -28,8 +28,8 @@ function galleryOf(project: Project): ProjectImage[] {
 }
 
 /**
- * Full-screen project page. Details on the left stay in view while you
- * scroll through the pictures on the right.
+ * Project page as a floating card over a dimmed page. Details on the left
+ * stay in view while you scroll through the pictures on the right.
  */
 export function ProjectDetail({ project, onClose }: { project: Project; onClose: () => void }) {
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -68,49 +68,55 @@ export function ProjectDetail({ project, onClose }: { project: Project; onClose:
   const about = project.description || project.overview;
 
   return (
-    <motion.div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="project-detail-title"
-      className="fixed inset-0 z-[70] overflow-y-auto bg-background/95 backdrop-blur-md"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.25 }}
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/65 p-3 backdrop-blur-sm sm:p-6"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <button
-        ref={closeRef}
-        type="button"
-        onClick={onClose}
-        aria-label="Close project"
-        className="fixed right-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/80 text-foreground backdrop-blur transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:right-6 sm:top-6"
+      <motion.div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="project-detail-title"
+        className="relative w-full max-w-6xl rounded-2xl border border-border bg-card shadow-2xl"
+        initial={{ opacity: 0, scale: 0.96, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 16 }}
+        transition={{ duration: 0.25 }}
       >
-        <X className="h-5 w-5" />
-      </button>
+        <button
+          ref={closeRef}
+          type="button"
+          onClick={onClose}
+          aria-label="Close project"
+          className="absolute right-3 top-3 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/80 text-foreground backdrop-blur transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:right-4 sm:top-4"
+        >
+          <X className="h-5 w-5" />
+        </button>
 
-      <div className="mx-auto max-w-7xl px-5 pb-20 sm:px-8">
-        <header className="flex items-start justify-between gap-6 pb-8 pr-14 pt-8 sm:pr-16 sm:pt-10">
-          <h2
-            id="project-detail-title"
-            className="text-balance text-3xl font-medium tracking-tight sm:text-4xl lg:text-5xl"
-          >
-            {project.title}
-          </h2>
-          <button
-            type="button"
-            onClick={copyLink}
-            className="mt-2 inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-primary transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {copied ? 'Link copied' : 'Copy link'}
-            {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
-          </button>
-        </header>
-        <p role="status" aria-live="polite" className="sr-only">
-          {copied ? 'Project link copied to clipboard' : ''}
-        </p>
+        <div className="max-h-[calc(100vh-1.5rem)] overflow-y-auto overscroll-contain px-5 pb-10 sm:max-h-[calc(100vh-3rem)] sm:px-8">
+          <header className="flex items-start justify-between gap-6 pb-8 pr-14 pt-8 sm:pr-16 sm:pt-10">
+            <h2
+              id="project-detail-title"
+              className="text-balance text-2xl font-medium tracking-tight sm:text-3xl lg:text-4xl"
+            >
+              {project.title}
+            </h2>
+            <button
+              type="button"
+              onClick={copyLink}
+              className="mt-2 inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-primary transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {copied ? 'Link copied' : 'Copy link'}
+              {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
+            </button>
+          </header>
+          <p role="status" aria-live="polite" className="sr-only">
+            {copied ? 'Project link copied to clipboard' : ''}
+          </p>
 
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-12">
-          <aside className="space-y-8 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto lg:pr-2">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:gap-10">
+          <aside className="space-y-8 lg:sticky lg:top-0 lg:max-h-[calc(100vh-8rem)] lg:self-start lg:overflow-y-auto lg:pr-2">
             {project.role && (
               <p className="text-base">
                 <span className="text-muted-foreground">My role. </span>
@@ -186,7 +192,8 @@ export function ProjectDetail({ project, onClose }: { project: Project; onClose:
             )}
           </div>
         </div>
-      </div>
-    </motion.div>
+        </div>
+      </motion.div>
+    </div>
   );
 }
