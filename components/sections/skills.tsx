@@ -2,27 +2,21 @@
 
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { motion } from 'framer-motion';
-import { useSkills } from '@/hooks/use-data';
+import { useSkills, useSkillDisplayCategories } from '@/hooks/use-data';
 import { SectionReveal } from '@/components/section-reveal';
 import { SectionHeading } from '@/components/section-heading';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { SkillCategory } from '@/lib/types';
-
-const categoryOrder: SkillCategory[] = ['Design', 'Development', 'Data'];
-
-const categoryIcons: Record<SkillCategory, string> = {
-  Design: 'What I use to design screens and flows.',
-  Development: 'What I build with.',
-  Data: 'What I use to clean up messy data.',
-};
+import type { SkillDisplayCategory } from '@/lib/types';
 
 export function SkillsSection() {
   const { skills, loading, error } = useSkills();
+  const { categories: displayCategories, loading: catsLoading } = useSkillDisplayCategories();
   const reduceMotion = useReducedMotion();
 
-  const grouped = categoryOrder.map((cat) => ({
-    category: cat,
-    items: skills.filter((s) => s.category === cat),
+  const grouped = displayCategories.map((cat) => ({
+    category: cat.name,
+    description: cat.description ?? '',
+    items: skills.filter((s) => s.category === cat.name),
   }));
 
   return (
@@ -43,7 +37,7 @@ export function SkillsSection() {
       )}
 
       <div className="grid gap-8 md:grid-cols-3">
-        {loading
+        {(loading || catsLoading)
           ? Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="rounded-2xl border border-border bg-card p-6">
                 <Skeleton className="h-6 w-24" />
@@ -63,7 +57,7 @@ export function SkillsSection() {
                   {group.category}
                 </h3>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {categoryIcons[group.category]}
+                  {group.description}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {group.items.map((skill, si) => (
