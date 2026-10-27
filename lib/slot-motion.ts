@@ -10,15 +10,15 @@
 
 export const SLOT = {
   /** Wait before the first reel starts, in seconds. */
-  delay: 0.2,
+  delay: 0.15,
   /** Gap between one reel starting and the next one (right to left). */
-  startGap: 0.3,
+  startGap: 0.2,
   /** Speeding up. */
-  ramp: 0.5,
+  ramp: 0.4,
   /** Full speed, drawn as blur. */
-  cruise: 0.9,
+  cruise: 0.5,
   /** Slowing down. The last part of this is easy to read. */
-  decel: 2.0,
+  decel: 1.2,
   /** Fastest speed, in digits per second. */
   peak: 24,
   /** At this speed the blur is at its strongest. */
