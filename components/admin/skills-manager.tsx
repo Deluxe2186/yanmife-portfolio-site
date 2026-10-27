@@ -14,6 +14,7 @@ import {
 
 export function SkillsManager() {
   const [skills, setSkills] = useState<Skill[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Skill | null>(null);
   const [creating, setCreating] = useState(false);
@@ -25,6 +26,12 @@ export function SkillsManager() {
     if (!silent) setLoading(true);
     const { data } = await supabase.from('skills').select('*').order('sort_order');
     setSkills(data ?? []);
+    // Extract unique categories from skills
+    const uniqueCats = Array.from(new Set((data ?? []).map(s => s.category).filter(Boolean))).sort();
+    // Ensure default categories exist
+    const defaults = ['Design', 'Development', 'Data'];
+    const allCats = Array.from(new Set([...defaults, ...uniqueCats])).sort();
+    setCategories(allCats);
     setLoading(false);
   };
 
@@ -88,28 +95,51 @@ export function SkillsManager() {
           saving={saving}
           onSave={save}
           onCancel={() => { setEditing(null); setCreating(false); }}
+          categories={categories}
         />
       )}
     </div>
   );
 }
 
-function SkillForm({ skill, saving, onSave, onCancel }: {
+function SkillForm({ skill, saving, onSave, onCancel, categories }: {
   skill: Partial<Skill>;
   saving: boolean;
   onSave: (s: any) => void;
   onCancel: () => void;
+  categories: string[];
 }) {
   const [name, setName] = useState(skill.name ?? '');
   const [category, setCategory] = useState(skill.category ?? 'Design');
   const [sortOrder, setSortOrder] = useState(skill.sort_order ?? 0);
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
+
+  const handleCategoryChange = (value: string) => {
+    if (value === '__new__') {
+      setShowNewCategory(true);
+      setCategory(skill.category ?? 'Design');
+    } else {
+      setShowNewCategory(false);
+      setCategory(value);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const finalCategory = showNewCategory ? newCategory.trim() : category;
+    if (!finalCategory) return;
+    onSave({ ...skill, name, category: finalCategory, sort_order: sortOrder });
+    setShowNewCategory(false);
+    setNewCategory('');
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={onCancel}>
       <form
         className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
-        onSubmit={(e) => { e.preventDefault(); onSave({ ...skill, name, category, sort_order: sortOrder }); }}
+        onSubmit={handleSubmit}
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">{skill.id ? 'Edit skill' : 'New skill'}</h2>
@@ -119,20 +149,38 @@ function SkillForm({ skill, saving, onSave, onCancel }: {
           <div><Label>Name</Label><Input value={name} onChange={(e) => setName(e.target.value)} required className="mt-1.5" /></div>
           <div>
             <Label>Category</Label>
-            <Select value={category} onValueChange={setCategory}>
+            <Select value={showNewCategory ? '__new__' : category} onValueChange={handleCategoryChange}>
               <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="Design">Design</SelectItem>
-                <SelectItem value="Development">Development</SelectItem>
-                <SelectItem value="Data">Data</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+                <SelectItem value="__new__">+ Add new category…</SelectItem>
               </SelectContent>
             </Select>
+            {showNewCategory && (
+              <div className="mt-2 flex gap-2">
+                <Input
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  placeholder="New category name"
+                  autoFocus
+                  maxLength={30}
+                />
+                <Button type="button" variant="ghost" size="icon" onClick={() => { setShowNewCategory(false); setNewCategory(''); }}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
           <div><Label>Sort order</Label><Input type="number" value={sortOrder} onChange={(e) => setSortOrder(parseInt(e.target.value) || 0)} className="mt-1.5" /></div>
         </div>
         <div className="mt-6 flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-          <Button type="submit" disabled={saving}>{saving && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}Save</Button>
+          <Button type="submit" disabled={saving || (showNewCategory && !newCategory.trim())}>
+            {saving && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
+            Save
+          </Button>
         </div>
       </form>
     </div>
