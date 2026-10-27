@@ -58,11 +58,8 @@ export interface Category {
 }
 
 export type ProjectCategory = string;
-export interface SkillDisplayCategory {
+export interface SkillCategory {
   id: string;
   name: string;
-  description: string | null;
   sort_order: number;
 }
-
-export type SkillCategory = string;

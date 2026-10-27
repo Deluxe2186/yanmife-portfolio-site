@@ -2,20 +2,19 @@
 
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { motion } from 'framer-motion';
-import { useSkills, useSkillDisplayCategories } from '@/hooks/use-data';
+import { useSkills, useSkillCategories } from '@/hooks/use-data';
 import { SectionReveal } from '@/components/section-reveal';
 import { SectionHeading } from '@/components/section-heading';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { SkillDisplayCategory } from '@/lib/types';
+import type { SkillCategory } from '@/lib/types';
 
 export function SkillsSection() {
   const { skills, loading, error } = useSkills();
-  const { categories: displayCategories, loading: catsLoading } = useSkillDisplayCategories();
+  const { categories: skillCategories, loading: catsLoading } = useSkillCategories();
   const reduceMotion = useReducedMotion();
 
-  const grouped = displayCategories.map((cat) => ({
+  const grouped = skillCategories.map((cat) => ({
     category: cat.name,
-    description: cat.description ?? '',
     items: skills.filter((s) => s.category === cat.name),
   }));
 
@@ -56,9 +55,6 @@ export function SkillsSection() {
                 <h3 className="text-lg font-semibold tracking-tight">
                   {group.category}
                 </h3>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {group.description}
-                </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {group.items.map((skill, si) => (
                     <motion.span

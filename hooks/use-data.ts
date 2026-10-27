@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchProfilePhoto } from '@/lib/profile-photo';
 import { fetchCv, type Cv } from '@/lib/cv';
-import type { Project, Skill, Experience, Category, SkillDisplayCategory } from '@/lib/types';
+import type { Project, Skill, Experience, Category, SkillCategory } from '@/lib/types';
 
 export function useProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -56,7 +56,7 @@ export function useSkills() {
     return () => { cancelled = true; };
   }, []);
 
-  return { skills, loading, error };
+  return { skills, setSkills, loading, error };
 }
 
 export function useExperience() {
@@ -163,19 +163,19 @@ export function useCategories() {
   return { categories, setCategories, loading, tableMissing, reload };
 }
 
-export function useSkillDisplayCategories() {
-  const [categories, setCategories] = useState<SkillDisplayCategory[]>([]);
+export function useSkillCategories() {
+  const [categories, setCategories] = useState<SkillCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [tableMissing, setTableMissing] = useState(false);
 
   const reload = useCallback(async () => {
     const { data, error } = await supabase
-      .from('skill_display_categories')
+      .from('skill_categories')
       .select('*')
       .order('sort_order', { ascending: true });
     if (error) {
       const missing = isMissingCategoriesTable(error);
-      if (!missing) console.error('[supabase] skill_display_categories', error);
+      if (!missing) console.error('[supabase] skill_categories', error);
       setTableMissing(missing);
       setCategories([]);
     } else {
