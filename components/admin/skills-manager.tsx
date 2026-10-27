@@ -19,6 +19,11 @@ export function SkillsManager() {
   const [editing, setEditing] = useState<Skill | null>(null);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [catCounts, setCatCounts] = useState<Record<string, number>>({});
+  const [deletingCat, setDeletingCat] = useState<string | null>(null);
+  const [reassignTo, setReassignTo] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
 
   useEffect(() => { load(); }, []);
 
@@ -32,6 +37,10 @@ export function SkillsManager() {
     const defaults = ['Design', 'Development', 'Data'];
     const allCats = Array.from(new Set([...defaults, ...uniqueCats])).sort();
     setCategories(allCats);
+    // Count skills per category
+    const counts: Record<string, number> = {};
+    (data ?? []).forEach(s => { counts[s.category] = (counts[s.category] ?? 0) + 1; });
+    setCatCounts(counts);
     setLoading(false);
   };
 
@@ -57,6 +66,24 @@ export function SkillsManager() {
       setSkills(previous);
       alert(`Could not delete: ${error.message}`);
     }
+  };
+
+  const removeCategory = async (cat: string, reassignTo?: string) => {
+    setBusy(true);
+    setNote(null);
+    if (reassignTo) {
+      const { error } = await supabase.from('skills').update({ category: reassignTo }).eq('category', cat);
+      if (error) {
+        setBusy(false);
+        setNote({ type: 'error', text: `Could not reassign skills: ${error.message}` });
+        return;
+      }
+    }
+    setBusy(false);
+    setDeletingCat(null);
+    setReassignTo('');
+    load(true);
+    setNote({ type: 'ok', text: reassignTo ? `Moved skills to "${reassignTo}" and removed "${cat}".` : `Removed "${cat}".` });
   };
 
   if (loading) {
@@ -98,6 +125,77 @@ export function SkillsManager() {
           categories={categories}
         />
       )}
+
+      {/* Category management */}
+      <div className="mt-8 border-t border-border pt-6">
+        <h3 className="text-md font-semibold mb-3">Categories</h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          Categories with no skills can be removed. Default categories (Design, Development, Data) are always shown.
+        </p>
+        {note && (
+          <p role="status" className={`mb-3 text-sm ${note.type === 'ok' ? 'text-success' : 'text-destructive'}`}>
+            {note.text}
+          </p>
+        )}
+        <ul className="space-y-2 max-w-md">
+          {categories.map((cat) => {
+            const count = catCounts[cat] ?? 0;
+            const isDefault = ['Design', 'Development', 'Data'].includes(cat);
+            return (
+              <li key={cat} className="flex items-center justify-between rounded-lg border border-border bg-card p-3">
+                <div className="flex items-center gap-3">
+                  <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">{cat}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {count === 0 ? 'No skills' : `${count} skill${count === 1 ? '' : 's'}`}
+                  </span>
+                  {isDefault && <span className="text-xs text-muted-foreground">(default)</span>}
+                </div>
+                {count === 0 && !isDefault && !busy && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive"
+                    onClick={() => {
+                      if (confirm(`Remove category "${cat}"?`)) removeCategory(cat);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+                {count > 0 && !busy && deletingCat === cat && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Move skills to</span>
+                    <select
+                      value={reassignTo}
+                      onChange={(e) => setReassignTo(e.target.value)}
+                      className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                    >
+                      {categories.filter(c => c !== cat).map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                    <Button size="sm" variant="destructive" onClick={() => removeCategory(cat, reassignTo)}>
+                      Move & remove
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => { setDeletingCat(null); setReassignTo(''); }}>Cancel</Button>
+                  </div>
+                )}
+                {count > 0 && !busy && deletingCat !== cat && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive"
+                    onClick={() => { setDeletingCat(cat); setReassignTo(categories.find(c => c !== cat) ?? ''); }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+                {busy && deletingCat === cat && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </div>
   );
 }
