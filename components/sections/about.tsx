@@ -32,7 +32,7 @@ export function AboutSection() {
         subtitle="Who I am and what I do."
       />
 
-      <div className="grid items-center gap-10 sm:grid-cols-[1fr_2fr] lg:gap-16">
+      <div className="grid items-start gap-10 sm:grid-cols-[1fr_2fr] lg:gap-16">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
