@@ -6,34 +6,43 @@
  * (drawn as a vertical blur), then slows down gently and drops onto its
  * final digit. Reels start from the right and stop from the right, so the
  * last digit lands first and the first digit lands last.
+ *
+ * Now includes "+" symbol and special characters (#$&!) that shuffle
+ * between digits at different speeds per reel.
  */
+
+// Characters that shuffle during the spin (digits + special chars + plus)
+export const SLOT_CHARS = ['0','1','2','3','4','5','6','7','8','9','#','$','&','!','+'];
 
 export const SLOT = {
   /** Wait before the first reel starts, in seconds. */
-  delay: 0.15,
+  delay: 0.08,
   /** Gap between one reel starting and the next one (right to left). */
-  startGap: 0.2,
+  startGap: 0.12,
   /** Speeding up. */
-  ramp: 0.4,
+  ramp: 0.25,
   /** Full speed, drawn as blur. */
-  cruise: 0.5,
+  cruise: 0.3,
   /** Slowing down. The last part of this is easy to read. */
-  decel: 1.2,
-  /** Fastest speed, in digits per second. */
-  peak: 24,
+  decel: 0.7,
+  /** Base fastest speed, in chars per second. Each reel gets a speed multiplier. */
+  peak: 35,
   /** At this speed the blur is at its strongest. */
-  blurFullSpeed: 16,
+  blurFullSpeed: 20,
 };
 
 /** Seconds one reel takes from its start to coming to rest. */
 export const REEL_SECONDS = SLOT.ramp + SLOT.cruise + SLOT.decel;
 
+/** Per-reel speed multipliers - each digit spins at a different speed. */
+export const REEL_SPEED_MULTIPLIERS = [1.3, 1.15, 1.0, 0.85, 0.75, 0.65];
+
 export interface ReelPlan {
-  /** The digits that scroll past, in order. The first is shown at rest, the last is the answer. */
-  seq: number[];
+  /** The chars that scroll past, in order. The first is shown at rest, the last is the answer. */
+  seq: (number | string)[];
   /** When this reel starts, in seconds. */
   start: number;
-  /** Highest speed in digits per second. */
+  /** Highest speed in chars per second. */
   vmax: number;
 }
 
@@ -49,28 +58,39 @@ function mulberry32(seed: number) {
   };
 }
 
-/** How far a reel travels, in digits, for a given top speed. */
+/** How far a reel travels, in chars, for a given top speed. */
 const distance = (vmax: number) =>
   vmax * (SLOT.ramp / 2 + SLOT.cruise + SLOT.decel / 3);
 
 /**
- * @param finalDigit the digit the reel lands on
+ * @param finalValue the value the reel lands on (number for digits, or '+' string)
  * @param k          how far the reel is from the right edge (0 = last digit)
  */
-export function planReel(finalDigit: number, k: number): ReelPlan {
-  const steps = Math.round(distance(SLOT.peak)) + k * 2; // a whole number of digits
-  const vmax = steps / (SLOT.ramp / 2 + SLOT.cruise + SLOT.decel / 3);
-  const random = mulberry32(finalDigit * 7919 + k * 104729 + 17);
+export function planReel(finalValue: number | string, k: number): ReelPlan {
+  const speedMult = REEL_SPEED_MULTIPLIERS[k % REEL_SPEED_MULTIPLIERS.length] ?? 1.0;
+  const effectivePeak = SLOT.peak * speedMult;
 
-  const seq: number[] = [0];
+  const steps = Math.round(distance(effectivePeak)) + k * 2; // a whole number of chars
+  const vmax = steps / (SLOT.ramp / 2 + SLOT.cruise + SLOT.decel / 3);
+  const random = mulberry32(
+    (typeof finalValue === 'number' ? finalValue : finalValue.charCodeAt(0)) * 7919 +
+    k * 104729 + 17
+  );
+
+  const seq: (number | string)[] = ['0'];
   for (let i = 1; i < steps; i++) {
-    let next = Math.floor(random() * 10);
-    if (next === seq[i - 1]) next = (next + 1 + Math.floor(random() * 8)) % 10;
+    let next = SLOT_CHARS[Math.floor(random() * SLOT_CHARS.length)];
+    // Avoid same character twice in a row
+    if (next === seq[i - 1]) {
+      next = SLOT_CHARS[(SLOT_CHARS.indexOf(next) + 1 + Math.floor(random() * (SLOT_CHARS.length - 1))) % SLOT_CHARS.length];
+    }
     seq.push(next);
   }
-  // Never end on the same digit twice in a row, so the landing is a real move.
-  if (seq[steps - 1] === finalDigit) seq[steps - 1] = (finalDigit + 5) % 10;
-  seq.push(finalDigit);
+  // Ensure the final character is what we want
+  if (seq[steps - 1] !== finalValue) {
+    seq[steps - 1] = finalValue;
+  }
+  seq.push(finalValue);
 
   return { seq, start: SLOT.delay + k * SLOT.startGap, vmax };
 }
@@ -110,7 +130,7 @@ export function reelState(plan: ReelPlan, t: number): ReelState {
 }
 
 export interface GlyphDraw {
-  digit: number;
+  digit: number | string;
   /** Vertical position in percent of one digit's height. Positive is down. */
   y: number;
   stretch: number;

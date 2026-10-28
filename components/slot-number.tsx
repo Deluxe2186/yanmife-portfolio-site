@@ -10,28 +10,32 @@ type ReelNodes = { a: HTMLSpanElement | null; b: HTMLSpanElement | null };
 const GLYPH = 'absolute inset-0 block text-center leading-[1.1em] tabular-nums will-change-transform';
 
 /**
- * Shows a number as slot machine reels. When it scrolls into view, every
- * digit spins as a blur of vertical streaks, then slows down and drops onto
- * its real value. The digit on the right starts and lands first, the digit
- * on the left lands last. See lib/slot-motion.ts for the motion itself.
+ * Shows a value as slot machine reels. When it scrolls into view, every
+ * digit/symbol spins as a blur of vertical streaks, then slows down and drops onto
+ * its real value. The rightmost reel starts and lands first, the leftmost lands last.
+ * Supports digits, "+", and special chars (#$&!). See lib/slot-motion.ts for the motion.
  *
  * The animation writes straight to the page every frame instead of going
  * through React, which keeps it smooth.
  */
-export function SlotNumber({ value, suffix = '' }: { value: number; suffix?: string }) {
+export function SlotNumber({ value, suffix = '' }: { value: string | number; suffix?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: '-40px' });
   const reduceMotion = useReducedMotion();
   const nodes = useRef<ReelNodes[]>([]);
 
   const digits = useMemo(
-    () => String(Math.max(0, Math.floor(value))).split('').map(Number),
+    () => {
+      const str = String(value);
+      // Split into individual characters, each becomes a reel
+      return str.split('');
+    },
     [value]
   );
   // k = how far the digit is from the right edge. The last digit has k = 0.
   const plans = useMemo(() => digits.map((d, i) => planReel(d, digits.length - 1 - i)), [digits]);
 
-  // People who asked for less motion get the real number straight away.
+  // People who asked for less motion get the real value straight away.
   useEffect(() => {
     if (!reduceMotion) return;
     digits.forEach((digit, i) => {
@@ -45,7 +49,7 @@ export function SlotNumber({ value, suffix = '' }: { value: number; suffix?: str
 
   useEffect(() => {
     if (!inView || reduceMotion) return;
-    const shown = digits.map(() => [-1, -1]); // what each node shows, to skip needless writes
+    const shown = digits.map(() => ['', ''] as (string | number)[]); // what each node shows, to skip needless writes
     const startedAt = performance.now();
     let frame = 0;
 
@@ -90,7 +94,7 @@ export function SlotNumber({ value, suffix = '' }: { value: number; suffix?: str
           aria-hidden="true"
           className="relative inline-block h-[1.1em] overflow-hidden align-top leading-[1.1em]"
         >
-          {/* Invisible copy of the real digit. It gives the reel its width and height. */}
+          {/* Invisible copy of the real character. It gives the reel its width and height. */}
           <span className="invisible block h-[1.1em] leading-[1.1em] tabular-nums">{digit}</span>
           <span ref={setNode(i, 'a')} className={GLYPH}>
             0
