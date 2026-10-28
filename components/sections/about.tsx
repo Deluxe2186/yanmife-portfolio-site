@@ -32,13 +32,13 @@ export function AboutSection() {
         subtitle="Who I am and what I do."
       />
 
-      <div className="grid items-center gap-10 sm:grid-cols-2 lg:gap-16">
+      <div className="grid items-center gap-10 sm:grid-cols-[1fr_2fr] lg:gap-16">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="relative mx-auto aspect-square w-full max-w-sm"
+          className="relative aspect-square w-full max-w-xs"
         >
           <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5" />
           <div className="absolute inset-0 overflow-hidden rounded-3xl border border-border bg-card">
