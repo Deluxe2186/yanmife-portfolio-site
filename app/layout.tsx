@@ -13,7 +13,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://yanmife-portfolio-site.vercel.app/'),
+  metadataBase: new URL('https://yanmife-portfolio.vercel.app/'),
   title: 'Yanmife | UI/UX Designer & Web Developer in Lagos',
   description:
     `Hi, I'm Yanmife. I design and build clean, easy-to-use websites and apps. Based in Lagos, Nigeria. Available for freelance work.`,
