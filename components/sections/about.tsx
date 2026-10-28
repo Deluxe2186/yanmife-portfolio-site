@@ -26,13 +26,15 @@ export function AboutSection() {
 
   return (
     <SectionReveal id="about" className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
-      <SectionHeading
-        eyebrow="About"
-        title="A bit about me"
-        subtitle="Who I am and what I do."
-      />
+      <div className="grid gap-10 sm:grid-cols-[1fr_2fr] lg:gap-16">
+        <div className="sm:col-span-2">
+          <SectionHeading
+            eyebrow="About"
+            title="A bit about me"
+            subtitle="Who I am and what I do."
+          />
+        </div>
 
-      <div className="grid items-start gap-10 sm:grid-cols-[1fr_2fr] lg:gap-16">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
