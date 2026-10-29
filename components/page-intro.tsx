@@ -1,191 +1,175 @@
 'use client';
 
-import { useReducedMotion } from '@/hooks/use-reduced-motion';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { Code, Palette, Box, Sparkles, Zap, MousePointerClick } from 'lucide-react';
+import {
+  AnimatePresence,
+  animate,
+  motion,
+  useMotionValue,
+  useMotionValueEvent,
+  type MotionValue,
+} from 'framer-motion';
+import {
+  Bug,
+  Globe,
+  Keyboard,
+  Lightbulb,
+  MapPin,
+  Palette,
+  Smartphone,
+  type LucideIcon,
+} from 'lucide-react';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
 
-const ICONS = [Code, Palette, Box, Sparkles, Zap, MousePointerClick];
+/** One of these shows under the loading bar. Each visit shows a different one. */
+const MESSAGES: { icon: LucideIcon; text: string }[] = [
+  { icon: Lightbulb, text: 'I sketch the idea in Figma first, then I write the code.' },
+  { icon: Globe, text: 'A copy of the very first website is still online today.' },
+  { icon: Bug, text: 'In 1947, engineers found a real moth stuck inside a computer.' },
+  { icon: Keyboard, text: 'Tip: press Tab to move around this site without a mouse.' },
+  { icon: Palette, text: 'Good design is mostly small details people only notice when they are missing.' },
+  { icon: MapPin, text: 'Designed and built in Lagos, Nigeria.' },
+  { icon: Smartphone, text: 'On a phone? Swipe sideways on a row of projects to see more.' },
+];
+
+const STORAGE_KEY = 'portfolio-intro-last-message';
+
+/**
+ * Picks the message for this visit. The first visit is random. After that it
+ * moves to the next one in the list, so it is never the same twice in a row.
+ * If the browser blocks storage, it falls back to a random pick.
+ */
+function pickMessageIndex(): number {
+  const count = MESSAGES.length;
+  const random = Math.floor(Math.random() * count);
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    const last = stored === null ? -1 : parseInt(stored, 10);
+    const next = Number.isNaN(last) || last < 0 ? random : (last + 1) % count;
+    window.localStorage.setItem(STORAGE_KEY, String(next));
+    return next;
+  } catch {
+    return random;
+  }
+}
+
+/** Shows the whole-number percentage. Only this tiny piece re-renders while loading. */
+function Percent({ value }: { value: MotionValue<number> }) {
+  const [percent, setPercent] = useState(0);
+  useMotionValueEvent(value, 'change', (latest) => setPercent(Math.round(latest * 100)));
+  return <>{percent}</>;
+}
 
 export function PageIntro() {
   const [show, setShow] = useState(true);
-  const [progress, setProgress] = useState(0);
+  // Chosen after the page loads, so the server and the browser render the same thing first.
+  const [messageIndex, setMessageIndex] = useState<number | null>(null);
   const reduceMotion = useReducedMotion();
+  const progress = useMotionValue(0);
 
   useEffect(() => {
-    const duration = reduceMotion ? 0 : 2000;
-    const start = Date.now();
+    setMessageIndex(pickMessageIndex());
+  }, []);
 
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - start;
-      const p = Math.min(elapsed / duration, 1);
-      setProgress(p);
-      if (p >= 1) {
-        clearInterval(interval);
-        const timer = setTimeout(() => setShow(false), 300);
-        return () => clearTimeout(timer);
-      }
-    }, 50);
+  // Keep the page from scrolling behind the intro, which is easy to trigger on a phone.
+  useEffect(() => {
+    if (!show) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [show]);
 
-    return () => clearInterval(interval);
-  }, [reduceMotion]);
+  // The bar and the number share one value, so they always agree and nothing re-renders.
+  useEffect(() => {
+    progress.set(0);
+    let hideTimer: ReturnType<typeof setTimeout> | undefined;
+    const controls = animate(progress, 1, {
+      duration: reduceMotion ? 0.3 : 2,
+      ease: 'easeInOut',
+      onComplete: () => {
+        hideTimer = setTimeout(() => setShow(false), 250);
+      },
+    });
+    return () => {
+      controls.stop();
+      if (hideTimer) clearTimeout(hideTimer);
+    };
+  }, [progress, reduceMotion]);
+
+  const rise = reduceMotion ? 0 : 16;
+  const message = messageIndex === null ? null : MESSAGES[messageIndex];
+  const MessageIcon = message?.icon;
 
   return (
     <AnimatePresence>
       {show && (
         <motion.div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-background"
+          role="status"
+          aria-label="Loading the portfolio"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-background px-6"
           exit={{ opacity: 0 }}
-          transition={{ duration: reduceMotion ? 0 : 0.6 }}
+          transition={{ duration: reduceMotion ? 0 : 0.5 }}
         >
-          <div className="relative">
-            {/* Floating geometric shapes */}
-            {!reduceMotion && (
-              <>
-                <FloatingShape size={80} x={10} y={15} delay={0} color="primary" />
-                <FloatingShape size={60} x={85} y={10} delay={0.2} color="primary/50" />
-                <FloatingShape size={45} x={5} y={70} delay={0.4} color="primary/30" />
-                <FloatingShape size={55} x={90} y={80} delay={0.6} color="primary/40" />
-                <FloatingShape size={35} x={20} y={85} delay={0.8} color="primary/20" />
-                <FloatingShape size={70} x={75} y={40} delay={1.0} color="primary/60" />
-              </>
-            )}
-
-            <motion.div
-              className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: reduceMotion ? 0 : 0.5 }}
+          <div className="flex w-full max-w-xs flex-col items-center gap-6 text-center">
+            <p
+              aria-label="Yanmife"
+              className="flex items-center text-4xl font-bold tracking-tight text-foreground sm:text-5xl"
             >
-              <div className="flex flex-col items-center gap-6 p-8">
-                {/* Fun bouncing icons */}
-                {!reduceMotion && (
-                  <motion.div
-                    className="flex items-center gap-3"
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                  >
-                    {ICONS.map((Icon, i) => (
-                      <motion.div
-                        key={i}
-                        className="text-primary/60"
-                        initial={{ opacity: 0, scale: 0, rotate: -90 }}
-                        animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                        transition={{ delay: 0.2 + i * 0.08, duration: 0.5, type: 'spring', stiffness: 200 }}
-                        whileHover={{ scale: 1.3, rotate: 180, transition: { duration: 0.2 } }}
-                      >
-                        <Icon className="h-8 w-8" />
-                      </motion.div>
-                    ))}
-                  </motion.div>
-                )}
-
-                {/* Name animation */}
-                <motion.div
-                  className="flex items-center gap-1 text-3xl sm:text-4xl font-bold tracking-tight text-foreground"
-                >
-                  {'Yanmife'.split('').map((char, i) => (
-                    <motion.span
-                      key={i}
-                      className={i < 4 ? 'text-primary' : ''}
-                      initial={{ opacity: 0, y: 30, rotateX: -90 }}
-                      animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                      transition={{ delay: 0.4 + i * 0.06, duration: 0.4, type: 'spring', stiffness: 180 }}
-                    >
-                      {char}
-                    </motion.span>
-                  ))}
-                </motion.div>
-
-                {/* Tagline */}
-                <motion.p
-                  className="text-sm text-muted-foreground max-w-xs text-center"
-                  initial={{ opacity: 0, y: 20 }}
+              {'Yanmife'.split('').map((char, i) => (
+                <motion.span
+                  key={i}
+                  aria-hidden="true"
+                  className={i < 4 ? 'text-primary' : undefined}
+                  initial={{ opacity: 0, y: rise }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.0, duration: 0.4 }}
+                  transition={{ delay: reduceMotion ? 0 : 0.1 + i * 0.05, duration: reduceMotion ? 0 : 0.4, ease: 'easeOut' }}
                 >
-                  Crafting digital experiences with code & creativity
-                </motion.p>
+                  {char}
+                </motion.span>
+              ))}
+            </p>
 
-                {/* Progress bar with fun animation */}
-                <div className="relative w-64 h-2 overflow-hidden rounded-full bg-muted">
-                  <motion.div
-                    className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary via-primary/70 to-primary/40"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress * 100}%` }}
-                    transition={{ duration: reduceMotion ? 0 : 1.5, ease: 'easeOut' }}
-                  />
-                  {/* Glowing spark on progress */}
-                  {!reduceMotion && (
-                    <motion.div
-                      className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-primary/80 blur-sm"
-                      animate={{ x: `${progress * 100}%`, opacity: [1, 0.5, 1] }}
-                      transition={{ duration: 1.5, ease: 'easeOut' }}
-                    />
-                  )}
-                </div>
+            <motion.p
+              className="text-sm text-muted-foreground"
+              initial={{ opacity: 0, y: rise / 2 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: reduceMotion ? 0 : 0.6, duration: reduceMotion ? 0 : 0.4 }}
+            >
+              UI/UX designer and web developer
+            </motion.p>
 
-                {/* Percentage text */}
-                <motion.p
-                  className="text-xs text-muted-foreground font-mono"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  {Math.round(progress * 100)}%
-                </motion.p>
-
-                {/* Fun fact / tip */}
-                <motion.p
-                  className="text-xs text-muted-foreground/70 text-center max-w-xs mt-4"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.2, duration: 0.4 }}
-                >
-                  {funFacts[Math.floor(Math.random() * funFacts.length)]}
-                </motion.p>
+            <div className="flex w-full flex-col items-center gap-2">
+              <div className="h-1.5 w-full max-w-[16rem] overflow-hidden rounded-full bg-muted">
+                <motion.div
+                  className="h-full w-full origin-left bg-gradient-to-r from-primary to-primary/60"
+                  style={{ scaleX: progress }}
+                />
               </div>
-            </motion.div>
+              <p aria-hidden="true" className="w-12 text-center font-mono text-xs tabular-nums text-muted-foreground">
+                <Percent value={progress} />%
+              </p>
+            </div>
+
+            {/* Reserved height, so the text fading in never pushes anything. */}
+            <div className="min-h-[6.5rem] w-full">
+              {message && MessageIcon && (
+                <motion.div
+                  key={messageIndex}
+                  className="flex flex-col items-center gap-2"
+                  initial={{ opacity: 0, y: rise / 2 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: reduceMotion ? 0 : 0.8, duration: reduceMotion ? 0 : 0.4 }}
+                >
+                  <MessageIcon aria-hidden="true" className="h-5 w-5 text-primary" />
+                  <p className="text-sm leading-relaxed text-muted-foreground">{message.text}</p>
+                </motion.div>
+              )}
+            </div>
           </div>
         </motion.div>
       )}
     </AnimatePresence>
-  );
-}
-
-const funFacts = [
-  'Did you know? The first computer bug was an actual moth! 🦋',
-  'Fun fact: "Yanmife" means "God has given me joy" in Yoruba ✨',
-  'Pro tip: Press Tab to navigate, Enter to activate 🎯',
-  'Loading creativity... ████████░░ 80% 🎨',
-  'Fun fact: The first website is still online! 🌐',
-  'Did you know? CSS stands for Cascading Style Sheets 🎨',
-  'Easter egg: Konami code works here! ↑↑↓↓←→←→BA 🎮',
-];
-
-function FloatingShape({ size, x, y, delay, color }: { size: number; x: number; y: number; delay: number; color: string }) {
-  return (
-    <motion.div
-      className="absolute rounded-full opacity-20 pointer-events-none"
-      style={{
-        width: size,
-        height: size,
-        left: `${x}%`,
-        top: `${y}%`,
-        backgroundColor: `var(--${color})`,
-      }}
-      initial={{ opacity: 0, scale: 0 }}
-      animate={{
-        opacity: [0.1, 0.2, 0.1],
-        scale: [0.8, 1.2, 0.8],
-        rotate: [0, 180, 360],
-      }}
-      transition={{
-        duration: 8 + Math.random() * 4,
-        repeat: Infinity,
-        ease: 'easeInOut',
-        delay,
-      }}
-    />
   );
 }
