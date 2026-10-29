@@ -236,8 +236,9 @@ function ProjectRow({
 }
 
 /**
- * The strip at either end of a row. On a phone it is always there (there is no
- * hover on touch). On a computer it fades in when the mouse is over the row.
+ * A round button at either end of a row. It has no background strip behind it,
+ * so nothing dark shows over the page. On a phone it is always there (there is
+ * no hover on touch). On a computer it fades in when the mouse is over the row.
  */
 function ArrowButton({ direction, onClick }: { direction: 'left' | 'right'; onClick: () => void }) {
   const left = direction === 'left';
@@ -246,15 +247,11 @@ function ArrowButton({ direction, onClick }: { direction: 'left' | 'right'; onCl
       type="button"
       onClick={onClick}
       aria-label={left ? 'Show earlier projects' : 'Show more projects'}
-      className={`absolute inset-y-0 z-10 flex w-11 items-center transition-opacity duration-200 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none sm:w-14 md:opacity-0 md:group-hover/row:opacity-100 ${
-        left
-          ? 'left-0 justify-start bg-gradient-to-r from-background/95 to-transparent pl-1'
-          : 'right-0 justify-end bg-gradient-to-l from-background/95 to-transparent pr-1'
+      className={`absolute top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 text-foreground shadow-md transition duration-200 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none md:opacity-0 md:group-hover/row:opacity-100 [@media(hover:hover)]:hover:border-primary [@media(hover:hover)]:hover:text-primary ${
+        left ? 'left-2' : 'right-2'
       }`}
     >
-      <span className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background/90 text-foreground shadow-md backdrop-blur transition-colors [@media(hover:hover)]:hover:border-primary [@media(hover:hover)]:hover:text-primary">
-        {left ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-      </span>
+      {left ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
     </button>
   );
 }
